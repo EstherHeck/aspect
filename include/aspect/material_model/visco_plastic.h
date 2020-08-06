@@ -375,6 +375,8 @@ namespace aspect
 
         Rheology::StrainDependent<dim> strain_rheology;
 
+        Rheology::FrictionOptions<dim> friction_options;
+
         /**
          * Objects for computing viscous creep viscosities.
          */
