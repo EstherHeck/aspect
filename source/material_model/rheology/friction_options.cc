@@ -218,12 +218,12 @@ namespace aspect
                 std::cout << "current edot ii * cellsize is " << current_edot_ii *cellsize << std::endl;
                 std::cout << "current edot ii is " << current_edot_ii<< std::endl;
               }
-            //std::cout << "Reaction terms!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
-            //std::cout << "Previous theta was: " << theta_old << std::endl;
-            //   std::cout << "current edot ii * cellsize is " << current_edot_ii *cellsize << std::endl;
+            std::cout << "Reaction terms!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
+            std::cout << "Previous theta was: " << theta_old << std::endl;
+               std::cout << "current edot ii * cellsize is " << current_edot_ii *cellsize << std::endl;
             //std::cout << "q: " << q << " j: "<< j << " in.composition[q][j] " << in.composition[q][j] << std::endl;
 
-            out.reaction_terms[q][theta_position_tmp] = theta_increment;
+            out.reaction_terms[q][theta_position_tmp] = 2;// theta_increment;
           }
       }
 
