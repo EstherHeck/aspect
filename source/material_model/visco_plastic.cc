@@ -285,8 +285,8 @@ namespace aspect
           // Step 1e: multiply the viscosity by a constant (default value is 1)
           viscosity_pre_yield = constant_viscosity_prefactors.compute_viscosity(viscosity_pre_yield, j);
 
-          // Step 2: calculate the viscous stress magnitude
-          // and strain rate. If requested compute visco-elastic contributions.
+
+          // Step 2 from before, when using the compute edot-ii function
           /*    double current_edot_ii = MaterialUtilities::compute_current_edot_ii(in.composition[i],
                                                                                   ref_strain_rate,
                                                                                   min_strain_rate,
@@ -295,31 +295,6 @@ namespace aspect
                                                                                   use_elasticity,
                                                                                   use_reference_strainrate,
                                                                                   dte);
-          */
-
-          /* current edot stuff from before
-                    // Step 2: calculate the viscous stress magnitude
-                    // and strain rate. If requested compute visco-elastic contributions.
-                    double current_edot_ii = edot_ii;
-                    //double current_stress = numbers::signaling_nan<double>();
-                    if (use_elasticity == false)
-                      current_stress = 2. * viscosity_pre_yield * current_edot_ii;
-                    else
-                      {
-                        if (use_reference_strainrate == false)
-                          {
-                            // Step 2a: calculate viscoelastic (effective) viscosity
-                            viscosity_pre_yield = elastic_rheology.calculate_viscoelastic_viscosity(viscosity_pre_yield,
-                                                                                                    elastic_shear_moduli[j]);
-
-                            // Step 2b: calculate current (viscous + elastic) stress magnitude
-                            current_stress = viscosity_pre_yield * current_edot_ii;
-                          }
-                      }
-
-                    // Step 2b: calculate current (viscous or viscous + elastic) stress magnitude
-                    current_stress = 2. * viscosity_pre_yield * current_edot_ii;
-          //double current_stress = 2. * viscosity_pre_yield * current_edot_ii;
           */
 
           // Step 2: calculate the viscous stress magnitude
@@ -392,27 +367,6 @@ namespace aspect
             }
 
           // Steb 3c: calculate friction angle dependent on rate and/or state if specified
-
-          /**  THESE CHANGES ARE COOL, ONCE JOHNS PR REQUEST HAS BEEN TESTED I GUESS
-          // Determine if the pressure used in Drucker Prager plasticity will be capped at 0 (default).
-          // This may be necessary in models without gravity and the dynamic stresses are much higher
-          // than the lithostatic prssure.
-          double pressure_for_plasticity = in.pressure[i];
-          if (allow_negative_pressures_in_plasticity == false)
-            pressure_for_plasticity = std::max(in.pressure[i],0.0);
-
-          double plastic_strain_rate =
-            drucker_prager_plasticity.compute_plastic_strain_rate(current_cohesion,
-                                                                  current_friction,
-                                                                  pressure_for_plasticity,
-                                                                  current_edot_ii,
-                                                                  drucker_prager_parameters.damper_viscosity,
-                                                                  viscosity_pre_yield);
-
-          current_friction = friction_options.compute_dependent_friction_angle(plastic_strain_rate, j, in.composition[i], current_cell, current_friction);
-
-          */
-
           current_friction = friction_options.compute_dependent_friction_angle(current_edot_ii, j, in.composition[i], current_cell, current_friction, in.position[i]);
 
           // Step 4: plastic yielding
@@ -448,7 +402,10 @@ namespace aspect
               {
                 // Step 4b-2: if the current stress is greater than the yield stress,
                 // rescale the viscosity back to yield surface
-                if (current_stress >= yield_stress)
+                // if this is the fault material and rate-and-state friction is used,
+                // assume that we are always yielding
+                if ((current_stress >= yield_stress) |
+                    (friction_options.get_use_theta()) && (this->introspection().name_for_compositional_index(j) == "fault"))
                   {
                     viscosity_yield = drucker_prager_plasticity.compute_viscosity(current_cohesion,
                                                                                   current_friction,
