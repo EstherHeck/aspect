@@ -54,7 +54,9 @@ namespace aspect
       {
         independent,
         dynamic_friction,
-        rate_and_state_dependent_friction
+        rate_and_state_dependent_friction,
+        rate_and_state_dependent_friction_plus_linear_slip_weakening,
+        slip_rate_dependent_rate_and_state_dependent_friction
       };
 
       template <int dim>
@@ -217,6 +219,30 @@ namespace aspect
            */
           Utilities::Coordinates::CoordinateSystem coordinate_system_a;
           Utilities::Coordinates::CoordinateSystem coordinate_system_b;
+
+          /**
+           * Slip rate dependent rate and state friction
+           */
+
+          /**
+           * Reference velocity for slip rate dependence of rate and state parameter a.
+           */
+          double ref_v_for_a;
+
+          /**
+           * Reference velocity for slip rate dependence of the critical slip distance.
+           */
+          double ref_v_for_L;
+
+          /**
+           * Slope for the log linear slip rate dependence of rate and state parameter a.
+           */
+          double slope_s_for_a;
+
+          /**
+           * Slope for the log linear slip rate dependence of the critical slip distance.
+           */
+          double slope_s_for_L;
       };
     }
   }

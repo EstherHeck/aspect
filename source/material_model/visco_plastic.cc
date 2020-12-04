@@ -220,13 +220,13 @@ namespace aspect
       unsigned int fault_material_index = 1000;
       if (friction_options.get_use_theta())
         {
-          // TODO: make this a bit more flexible name-wise, like let the user define which materials should be 
+          // TODO: make this a bit more flexible name-wise, like let the user define which materials should be
           // considered. Or which strategy. Could also be all, or take a and b as a proxy.
           // TODO: assert if no "fault" is declared but RSF is used.
-            AssertThrow(this->introspection().compositional_name_exists("fault"),
-                        ExcMessage("Material model with rate-and-state friction only works "
-                                   "if there is a compositional field that is called fault. For this composition "
-                                   "yielding is always assumed due to the rate and state framework."));
+          AssertThrow(this->introspection().compositional_name_exists("fault"),
+                      ExcMessage("Material model with rate-and-state friction only works "
+                                 "if there is a compositional field that is called fault. For this composition "
+                                 "yielding is always assumed due to the rate and state framework."));
           fault_material_index = this->introspection().compositional_index_for_name("fault");
         }
 
