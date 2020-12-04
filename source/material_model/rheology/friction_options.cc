@@ -134,6 +134,8 @@ namespace aspect
                 }
             }
           }
+        if (current_friction < 0)
+          current_friction = 0;
         return current_friction;
       }
 
@@ -166,10 +168,13 @@ namespace aspect
         // theta_{n+1} = L/V_{n+1} + (theta_n - L/V_{n+1})*exp(-(V_{n+1}dt)/L)
         // This is obtained from Equation (5): dtheta/dt = 1 - (theta V)/L
         // by integration using the assumption of that velocities are constant at any time step.
-        const double current_theta = critical_slip_distance / ( cellsize * current_edot_ii ) +
-                                     (theta_old - critical_slip_distance / ( cellsize * current_edot_ii))
-                                     * exp( - ((current_edot_ii * cellsize) * this->get_timestep()) / critical_slip_distance);
+        double current_theta = critical_slip_distance / ( cellsize * current_edot_ii ) +
+                               (theta_old - critical_slip_distance / ( cellsize * current_edot_ii))
+                               * exp( - ((current_edot_ii * cellsize) * this->get_timestep()) / critical_slip_distance);
 
+        // TODO: make dt the min theta?
+        if (current_theta <= 0)
+          current_theta = 1e-20;
         return current_theta;
       }
 
