@@ -188,7 +188,9 @@ namespace aspect
       std::vector<double> composition_viscosities(volume_fractions.size(), numbers::signaling_nan<double>());
 
       // Initialize or fill variables needed to calculate current_edot_ii
+      /* needed if compute_edot_ii is used
       const double dte = elastic_rheology.elastic_timestep();
+      */
       const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
 
       // Assemble stress tensor if elastic behavior is enabled
