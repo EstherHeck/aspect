@@ -213,6 +213,16 @@ namespace aspect
         edot_ii = std::max(std::sqrt(std::fabs(second_invariant(deviator(in.strain_rate[i])))),
                            min_strain_rate);
 
+      // if rate and state friction is used, this index is needed, as it will be used to always assume yielding
+      // conditions inside the fault. default is so high it should never unintentionally be reached.
+      unsigned int fault_comp_tmp = 1000;
+      if (friction_options.get_use_theta())
+        {
+          // TODO: make this a bit more flexible name-wise, like let the user define which materials should be considered. Or which strategy. Could also be all, or take a and b as a proxy.
+          // TODO: assert if no "fault" is declared but RSF is used.
+          fault_comp_tmp = this->introspection().compositional_index_for_name("fault");
+        }
+
       // Calculate viscosities for each of the individual compositional phases
       for (unsigned int j=0; j < volume_fractions.size(); ++j)
         {
@@ -405,7 +415,7 @@ namespace aspect
                 // if this is the fault material and rate-and-state friction is used,
                 // assume that we are always yielding
                 if ((current_stress >= yield_stress) |
-                    (friction_options.get_use_theta()) && (this->introspection().name_for_compositional_index(j) == "fault"))
+                    ((friction_options.get_use_theta()) && (j== fault_comp_tmp)))
                   {
                     viscosity_yield = drucker_prager_plasticity.compute_viscosity(current_cohesion,
                                                                                   current_friction,
