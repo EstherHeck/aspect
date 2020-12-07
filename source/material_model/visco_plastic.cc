@@ -222,7 +222,8 @@ namespace aspect
         {
           // TODO: make this a bit more flexible name-wise, like let the user define which materials should be
           // considered. Or which strategy. Could also be all, or take a and b as a proxy.
-          // TODO: assert if no "fault" is declared but RSF is used.
+          // TODO: should be done if this is > 70 or so %. Can be circumvented right now by using max 
+          // composition for viscosity averaging
           AssertThrow(this->introspection().compositional_name_exists("fault"),
                       ExcMessage("Material model with rate-and-state friction only works "
                                  "if there is a compositional field that is called fault. For this composition "
