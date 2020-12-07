@@ -690,6 +690,7 @@ namespace aspect
                       << "\t' " << prm.get("Function expression") << "'";
             throw;
           }
+        prm.leave_subsection();
 
         // parameters for slip rate dependent rate and state friction
 
@@ -701,7 +702,6 @@ namespace aspect
 
         slope_s_for_L = prm.get_double("Slope of log dependence for critical slip distance L");
 
-        prm.leave_subsection();
       }
     }
   }
