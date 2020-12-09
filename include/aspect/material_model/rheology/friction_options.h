@@ -56,7 +56,8 @@ namespace aspect
         dynamic_friction,
         rate_and_state_dependent_friction,
         rate_and_state_dependent_friction_plus_linear_slip_weakening,
-        slip_rate_dependent_rate_and_state_dependent_friction
+        slip_rate_dependent_rate_and_state_dependent_friction,
+        regularized_rate_and_state_friction
       };
 
       template <int dim>

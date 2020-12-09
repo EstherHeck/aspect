@@ -96,11 +96,12 @@ namespace aspect
                   // Their equation is for friction coefficient, while ASPECT takes friction angle in radians,
                   // so conversion with tan/atan().
                   const double current_friction_old = current_friction; // also only for chasing negative friction
-                  current_friction = atan(effective_friction_factor[j] * tan(current_friction)
-                                          + rate_and_state_parameter_a
-                                          * log((current_edot_ii * cellsize ) / quasi_static_strain_rate)
-                                          + rate_and_state_parameter_b
-                                          * log((theta * quasi_static_strain_rate ) / critical_slip_distance));
+                  current_friction = atan(effective_friction_factor[j]
+                                          * (tan(current_friction)
+                                             + rate_and_state_parameter_a
+                                             * log((current_edot_ii * cellsize ) / quasi_static_strain_rate)
+                                             + rate_and_state_parameter_b
+                                             * log((theta * quasi_static_strain_rate ) / critical_slip_distance)));
 
                   // chasing the origin of negative friction angles
                   if (theta <= 0)
@@ -172,12 +173,57 @@ namespace aspect
                   // mu = mu(1-p_f/sigma_n) = mu*, with (1-p_f/sigma_n) = 0.03 for subduction zones.
                   // Their equation is for friction coefficient, while ASPECT takes friction angle in radians,
                   // so conversion with tan/atan().
-                  current_friction = atan(effective_friction_factor[j] * tan(current_friction)
-                                          + rate_and_state_parameter_a
-                                          * log((current_edot_ii * cellsize ) / quasi_static_strain_rate)
-                                          + rate_and_state_parameter_b
-                                          * log((theta * quasi_static_strain_rate ) / dependent_critical_slip_distance));
+                  current_friction = atan(effective_friction_factor[j]
+                                          * (tan(current_friction)
+                                             + rate_and_state_parameter_a
+                                             * log((current_edot_ii * cellsize ) / quasi_static_strain_rate)
+                                             + rate_and_state_parameter_b
+                                             * log((theta * quasi_static_strain_rate ) / dependent_critical_slip_distance)));
+                  break;
+                }
+              else
+                {
+                  break;
+                }
+            }
+            case regularized_rate_and_state_friction:
+            {
+              // TODO as the cell size is used to compute the slip velocity as cell_size * strain_rate,
+              //  come up with a better representation of the slip length.
+              double cellsize = 1.;
+              if (current_cell.state() == IteratorState::valid)
+                {
+                  cellsize = current_cell->extent_in_direction(0);
+                  // Calculate the state variable theta
+                  // theta_old loads theta from previous time step
+                  const unsigned int theta_position_tmp = this->introspection().compositional_index_for_name("theta");
+                  const double theta_old = composition[theta_position_tmp];
+                  // Equation (7) from Sobolev and Muldashev (2017)
+                  const double theta = compute_theta(theta_old, current_edot_ii, cellsize);
 
+                  // Get the values for a and b
+                  const double rate_and_state_parameter_a = calculate_depth_dependent_a_and_b(position,j).first;
+                  const double rate_and_state_parameter_b = calculate_depth_dependent_a_and_b(position,j).second;
+
+                  // Calculate regularized rate and state friction (e.g. Herrendörfer 2018) with
+                  // mu = a sinh^{-1}[V/(2V_0)exp((mu_0 + b ln(V_0 theta/L))/a)]
+                  // Effective friction is calculated by multiplying the friction coefficient with the
+                  // effective_friction_factor to account for effects of pore fluid pressure:
+                  // mu = mu(1-p_f/sigma_n) = mu*, with (1-p_f/sigma_n) = 0.03 for subduction zones.
+                  // Their equation is for friction coefficient, while ASPECT takes friction angle in radians,
+                  // so conversion with tan/atan().
+                  current_friction = atan(effective_friction_factor[j]
+                                          * (rate_and_state_parameter_a
+                                             * asinh((current_edot_ii * cellsize ) / (2 * quasi_static_strain_rate)
+                                                     * exp(tan(current_friction)
+                                                           + rate_and_state_parameter_b
+                                                           * log((theta * quasi_static_strain_rate ) / critical_slip_distance)
+                                                           / rate_and_state_parameter_a))));
+                  break;
+                }
+              else
+                {
+                  break;
                 }
             }
           }
@@ -347,7 +393,8 @@ namespace aspect
         prm.declare_entry ("Friction dependence mechanism", "none",
                            Patterns::Selection("none|dynamic friction|rate and state dependent friction|"
                                                "rate and state dependent friction plus linear slip weakening|"
-                                               "slip rate dependent rate and state dependent friction"),
+                                               "slip rate dependent rate and state dependent friction|"
+                                               "regularized rate and state friction"),
                            "Whether to apply a rate or rate and state dependence of the friction angle. This can "
                            "be used to obtain stick-slip motion to simulate earthquake-like behaviour, "
                            "where short periods of high-velocities are seperated by longer periods without "
@@ -374,7 +421,9 @@ namespace aspect
                            "$\\Theta_{n+1} = \\frac{L}{V_{n+1}} + \big(\\Theta_n - \\frac{L}{V_{n+1}}\\big)*exp\\big(-\\frac{V_{n+1}\\Delta t}{L}\\big)$.\n"
                            "Pore fluid pressure can be taken into account by specifying the 'Effective friction "
                            "factor', which uses $\\mu* = \\mu\\big(1-\\frac{P_f}{\\sigma_n} \\big)$. "
-                           "Reasonable values for a and b are 0.01 and 0.015, respectively, see \\cite{sobolev_modeling_2017}."
+                           "Reasonable values for a and b are 0.01 and 0.015, respectively, see \\cite{sobolev_modeling_2017}. "
+                           "In ASPECT the state variable is confined to positive values: if it becomes $<=0$ during the computation "
+                           "it is set to 1e-10. The friction angle is set to 0 if negative. "
                            "\n\n"
                            "\\item ``rate and state dependent friction plus linear slip weakening'': ToDo: all, this is an empty model atm. "
                            "Method taken from \\cite{sobolev_modeling_2017}. The friction coefficient is computed as "
@@ -392,7 +441,13 @@ namespace aspect
                            "$L_0=10\\mu m$, $s_L=60\\mu m$, $V_L=100\\mu m/s$ and "
                            "$a_0=0.005$, $s_a=0.0003$, $V_a=100\\mu m/s$. "
                            "In ASPECT the initial values $a_0$ and $L_0$ are the rate and state friction parameters "
-                           "indicated in 'Critical slip distance' and 'Rate and state parameter a function'.");
+                           "indicated in 'Critical slip distance' and 'Rate and state parameter a function'."
+                           "\n\n"
+                           "\\item ``regularized rate and state friction'': The friction coefficient is computed using: "
+                           "$\\mu = a\\cdot sinh^{-1}\\left[\\frac{V}{2V_0}exp\\left(\\frac{\\mu_0+b\cdot ln(V_0\theta/L)}{a}\\right)\\right]$ "
+                           "This is a high velocity approxiamtion and regularized version of the classic rate and state friction. "
+                           "This formulation overcomes the problem of ill-posedness and the possibility of negative friction for "
+                           "$V<<V_0$. It is for example used in \\cite{herrendorfer_invariant_2018}. ");
 
         // Dynamic friction paramters
         prm.declare_entry ("Dynamic characteristic strain rate", "1e-12",
@@ -549,9 +604,21 @@ namespace aspect
         else if (prm.get ("Friction dependence mechanism") == "dynamic friction")
           friction_dependence_mechanism = dynamic_friction;
         else if (prm.get ("Friction dependence mechanism") == "rate and state dependent friction")
-          {
-            friction_dependence_mechanism = rate_and_state_dependent_friction;
+          friction_dependence_mechanism = rate_and_state_dependent_friction;
+        else if (prm.get ("Friction dependence mechanism") == "rate and state dependent friction plus linear slip weakening")
+          friction_dependence_mechanism = rate_and_state_dependent_friction_plus_linear_slip_weakening;
+        else if (prm.get ("Friction dependence mechanism") == "slip rate dependent rate and state dependent friction")
+          friction_dependence_mechanism = slip_rate_dependent_rate_and_state_dependent_friction;
+        else if (prm.get ("Friction dependence mechanism") == "regularized rate and state friction")
+          friction_dependence_mechanism = regularized_rate_and_state_friction;
+        else
+          AssertThrow(false, ExcMessage("Not a valid friction dependence option!"));
 
+        if ((friction_dependence_mechanism == slip_rate_dependent_rate_and_state_dependent_friction)
+            |(friction_dependence_mechanism == regularized_rate_and_state_friction)
+            |(friction_dependence_mechanism == rate_and_state_dependent_friction_plus_linear_slip_weakening)
+            |( friction_dependence_mechanism == rate_and_state_dependent_friction))
+          {
             // Currently, it only makes sense to use a state variable when the nonlinear solver
             // scheme does a single Advection iteration and at minimum one Stokes iteration, as
             // the state variable is implemented as a material field. More
@@ -571,40 +638,8 @@ namespace aspect
                         ExcMessage("The rate and state friction will only work with the nonlinear "
                                    "solver schemes 'single Advection, single Stokes' and "
                                    "'single Advection, iterated Stokes', 'single Advection, "
-                                   "iterated defect correction Stokes', 'ginle advection, Newton stokes'"));
+                                   "iterated defect correction Stokes', 'ginle advection, iterated Newton Stokes'"));
           }
-        else if (prm.get ("Friction dependence mechanism") == "rate and state dependent friction plus linear slip weakening")
-          {
-            friction_dependence_mechanism = rate_and_state_dependent_friction_plus_linear_slip_weakening;
-            AssertThrow((this->get_parameters().nonlinear_solver ==
-                         Parameters<dim>::NonlinearSolver::single_Advection_single_Stokes
-                         ||
-                         this->get_parameters().nonlinear_solver ==
-                         Parameters<dim>::NonlinearSolver::single_Advection_iterated_Stokes
-                         ||
-                         this->get_parameters().nonlinear_solver ==
-                         Parameters<dim>::NonlinearSolver::single_Advection_iterated_Newton_Stokes),
-                        ExcMessage("The rate and state friction will only work with the nonlinear "
-                                   "solver schemes 'single Advection, single Stokes' and "
-                                   "'single Advection, iterated Stokes'"));
-          }
-        else if (prm.get ("Friction dependence mechanism") == "slip rate dependent rate and state dependent friction")
-          {
-            friction_dependence_mechanism = slip_rate_dependent_rate_and_state_dependent_friction;
-            AssertThrow((this->get_parameters().nonlinear_solver ==
-                         Parameters<dim>::NonlinearSolver::single_Advection_single_Stokes
-                         ||
-                         this->get_parameters().nonlinear_solver ==
-                         Parameters<dim>::NonlinearSolver::single_Advection_iterated_Stokes
-                         ||
-                         this->get_parameters().nonlinear_solver ==
-                         Parameters<dim>::NonlinearSolver::single_Advection_iterated_Newton_Stokes),
-                        ExcMessage("The rate and state friction will only work with the nonlinear "
-                                   "solver schemes 'single Advection, single Stokes' and "
-                                   "'single Advection, iterated Stokes'"));
-          }
-        else
-          AssertThrow(false, ExcMessage("Not a valid friction dependence option!"));
 
         // Dynamic friction parameters
         dynamic_characteristic_strain_rate = prm.get_double("Dynamic characteristic strain rate");
