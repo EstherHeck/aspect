@@ -356,6 +356,7 @@ namespace aspect
       get_use_theta() const
       {
         bool use_theta = false;
+        // TODO add the RSF options
         if (get_friction_dependence_mechanism() == rate_and_state_dependent_friction)
           use_theta = true;
 
@@ -660,6 +661,7 @@ namespace aspect
         dynamic_friction_smoothness_exponent = prm.get_double("Dynamic friction smoothness exponent");
 
         // Rate and state friction parameters
+        // Todo: add other RSF options! Or take get_use_theta()
         if (friction_dependence_mechanism == rate_and_state_dependent_friction)
           {
             AssertThrow(this->introspection().compositional_name_exists("theta"),
