@@ -127,12 +127,8 @@ namespace aspect
                       std::cout << " the current_friction before the RSF is [RAD] " << current_friction_old << std::endl;
                       std::cout << "a is: "<<rate_and_state_parameter_a<< " and b is: "<< rate_and_state_parameter_b << std::endl;
                     }
-                  break;
                 }
-              else
-                {
-                  break;
-                }
+              break;
             }
             case rate_and_state_dependent_friction_plus_linear_slip_weakening:
             {
@@ -179,12 +175,8 @@ namespace aspect
                                              * log((current_edot_ii * cellsize ) / quasi_static_strain_rate)
                                              + rate_and_state_parameter_b
                                              * log((theta * quasi_static_strain_rate ) / dependent_critical_slip_distance)));
-                  break;
                 }
-              else
-                {
-                  break;
-                }
+              break;
             }
             case regularized_rate_and_state_friction:
             {
@@ -219,12 +211,8 @@ namespace aspect
                                                            + rate_and_state_parameter_b
                                                            * log((theta * quasi_static_strain_rate ) / critical_slip_distance)
                                                            / rate_and_state_parameter_a))));
-                  break;
                 }
-              else
-                {
-                  break;
-                }
+              break;
             }
           }
         if (current_friction < 0)
