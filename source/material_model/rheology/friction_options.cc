@@ -207,9 +207,9 @@ namespace aspect
                   current_friction = atan(effective_friction_factor[j]
                                           * (rate_and_state_parameter_a
                                              * asinh((current_edot_ii * cellsize ) / (2 * quasi_static_strain_rate)
-                                                     * exp(tan(current_friction)
+                                                     * exp((tan(current_friction)
                                                            + rate_and_state_parameter_b
-                                                           * log((theta * quasi_static_strain_rate ) / critical_slip_distance)
+                                                           * log((theta * quasi_static_strain_rate ) / critical_slip_distance))
                                                            / rate_and_state_parameter_a))));
                 }
               break;
