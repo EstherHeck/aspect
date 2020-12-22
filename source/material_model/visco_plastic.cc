@@ -577,7 +577,7 @@ namespace aspect
               current_friction = friction_options.compute_dependent_friction_angle(current_edot_ii, j, in.composition[i], in.current_cell, current_friction, in.position[i]);
               plastic_out->friction_angles[i] += 180.0/numbers::PI * volume_fractions[j] * current_friction;
 
-              // chasing the origin of negative friction angles
+              /*// chasing the origin of negative friction angles
               if (current_friction <= 0)
                 {
                   std::cout << "additional outputs!" << std::endl << "current_friction is zero/negative!"<<std::endl;
@@ -585,7 +585,7 @@ namespace aspect
                   std::cout << "current edot ii is " << current_edot_ii<< std::endl;
                   std::cout << "the friction coeff at this time is: " << tan(current_friction) << " and the friction angle in RAD is " << current_friction << std::endl;
                   std::cout << "the friction angle in degree is: " << current_friction*180/3.1516 << std::endl;
-                }
+                } */
             }
         }
     }

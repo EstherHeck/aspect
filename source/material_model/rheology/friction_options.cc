@@ -95,7 +95,7 @@ namespace aspect
                   // mu = mu(1-p_f/sigma_n) = mu*, with (1-p_f/sigma_n) = 0.03 for subduction zones.
                   // Their equation is for friction coefficient, while ASPECT takes friction angle in radians,
                   // so conversion with tan/atan().
-                  const double current_friction_old = current_friction; // also only for chasing negative friction
+                  //const double current_friction_old = current_friction; // also only for chasing negative friction
                   current_friction = atan(effective_friction_factor[j]
                                           * (tan(current_friction)
                                              + rate_and_state_parameter_a
@@ -103,7 +103,7 @@ namespace aspect
                                              + rate_and_state_parameter_b
                                              * log((theta * quasi_static_strain_rate ) / critical_slip_distance)));
 
-                  // chasing the origin of negative friction angles
+                  /*// chasing the origin of negative friction angles
                   if (theta <= 0)
                     {
                       std::cout << "Theta is zero/negative: " << theta << " at time " << this->get_time() << std::endl;
@@ -126,7 +126,7 @@ namespace aspect
                       std::cout << "the effective friction factor is: " << effective_friction_factor[j] << std::endl;
                       std::cout << " the current_friction before the RSF is [RAD] " << current_friction_old << std::endl;
                       std::cout << "a is: "<<rate_and_state_parameter_a<< " and b is: "<< rate_and_state_parameter_b << std::endl;
-                    }
+                    }*/
                 }
               break;
             }
@@ -297,7 +297,7 @@ namespace aspect
             const double theta_old = in.composition[q][theta_position_tmp];
             const double current_theta = compute_theta(theta_old, current_edot_ii, cellsize);
             const double theta_increment = current_theta - theta_old;
-            if (current_theta <= 0)
+            /*if (current_theta <= 0)
               {
                 std::cout << "Reaction terms!"<< std::endl << "Theta is zero/negative: " << current_theta << " at time " << this->get_time() << std::endl;
                 std::cout << "Previous theta was: " << theta_old << std::endl;
@@ -307,7 +307,7 @@ namespace aspect
             //std::cout << "Reaction terms!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
             //std::cout << "Previous theta was: " << theta_old << std::endl;
             //   std::cout << "current edot ii * cellsize is " << current_edot_ii *cellsize << std::endl;
-            //std::cout << "q: " << q << " j: "<< j << " in.composition[q][j] " << in.composition[q][j] << std::endl;
+            //std::cout << "q: " << q << " j: "<< j << " in.composition[q][j] " << in.composition[q][j] << std::endl; */
 
             out.reaction_terms[q][theta_position_tmp] = theta_increment;
           }
