@@ -223,7 +223,7 @@ namespace aspect
                std::cout << "current edot ii * cellsize is " << current_edot_ii *cellsize << std::endl;
             //std::cout << "q: " << q << " j: "<< j << " in.composition[q][j] " << in.composition[q][j] << std::endl;
 
-            out.reaction_terms[q][theta_position_tmp] = 2;// theta_increment;
+            out.reaction_terms[q][theta_position_tmp] = theta_increment;
           }
       }
 
