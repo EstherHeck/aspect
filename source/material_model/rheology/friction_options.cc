@@ -553,6 +553,17 @@ namespace aspect
                            "earthquakes. It therewith assures that the governing equations continue to have a solution "
                            "during earthquakelike episodes. Unlike an inertial term it cannot be used to model rupture "
                            "propagation as it approximates seismic waves as energy outflow only. ");
+           /* TODO:                
+          prm.declare_entry ("Friction state variable law", "aging law",
+                             Patterns::Selection ("aging law|slip law"),
+                             "A selection that determines the law used for the evolution of the state variable "
+                             "$\\theta$ in rate-and-state friction. When the aging law (also called Dietrich law) "
+                             "is chosen, the state variable is computed with "
+                             "$\\dot{\\theta}=1-\\frac{V\\theta}{D_c}$ while the slip law (or Ruina law) follows "
+                             "$\\dot{\\theta}=-\\frac{V\\theta}{D_c}ln\\frac{V\\theta}{D_c}$, where $D_c$ is the "
+                             "critical slip distance and V is velocity. The aging law indicates that state "
+                             "increases when $V=0$, whereas the slip law requires slip to occur: no evolution in "
+                             "state occurs unless $V\\neq0$ \\citep{scholz_mechanics_2019}."); */
 
         // Parameters for slip rate dependent rate and state friction
         prm.declare_entry ("Reference velocity for rate and state parameter a", "0.005",
