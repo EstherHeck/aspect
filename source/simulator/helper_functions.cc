@@ -2409,7 +2409,7 @@ namespace aspect
   template void Simulator<dim>::denormalize_pressure(const double pressure_adjustment, \
                                                      LinearAlgebra::BlockVector &vector, \
                                                      const LinearAlgebra::BlockVector &relevant_vector) const; \
-  template void Simulator<dim>::compute_pressure_scaling_factor (); \
+  template double Simulator<dim>::compute_pressure_scaling_factor () const; \
   template double Simulator<dim>::get_maximal_velocity (const LinearAlgebra::BlockVector &solution) const; \
   template std::pair<double,double> Simulator<dim>::get_extrapolated_advection_field_range (const AdvectionField &advection_field) const; \
   template void Simulator<dim>::maybe_write_timing_output () const; \
