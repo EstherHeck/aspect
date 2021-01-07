@@ -248,7 +248,7 @@ namespace aspect
         // Equation (7) from Sobolev and Muldashev (2017):
         // theta_{n+1} = L/V_{n+1} + (theta_n - L/V_{n+1})*exp(-(V_{n+1}dt)/L)
         // This is obtained from Equation (5): dtheta/dt = 1 - (theta V)/L
-        // by integration using the assumption of that velocities are constant at any time step.
+        // by integration using the assumption that velocities are constant at any time step.
         double current_theta = critical_slip_distance / ( cellsize * current_edot_ii ) +
                                (theta_old - critical_slip_distance / ( cellsize * current_edot_ii))
                                * exp( - ((current_edot_ii * cellsize) * this->get_timestep()) / critical_slip_distance);
@@ -557,13 +557,13 @@ namespace aspect
           prm.declare_entry ("Friction state variable law", "aging law",
                              Patterns::Selection ("aging law|slip law"),
                              "A selection that determines the law used for the evolution of the state variable "
-                             "$\\theta$ in rate-and-state friction. When the aging law (also called Dietrich law) "
-                             "is chosen, the state variable is computed with "
+                             "$\\theta$ in rate-and-state friction. When the aging law (also called Dietrich law "
+                             "or slowness law) is chosen, the state variable is computed with "
                              "$\\dot{\\theta}=1-\\frac{V\\theta}{D_c}$ while the slip law (or Ruina law) follows "
                              "$\\dot{\\theta}=-\\frac{V\\theta}{D_c}ln\\frac{V\\theta}{D_c}$, where $D_c$ is the "
                              "critical slip distance and V is velocity. The aging law indicates that state "
                              "increases when $V=0$, whereas the slip law requires slip to occur: no evolution in "
-                             "state occurs unless $V\\neq0$ \\citep{scholz_mechanics_2019}."); */
+                             "state occurs unless $V\\neq0$ \\citep[read more in ]{scholz_mechanics_2019}."); */
 
         // Parameters for slip rate dependent rate and state friction
         prm.declare_entry ("Reference velocity for rate and state parameter a", "0.005",
