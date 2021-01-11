@@ -67,11 +67,11 @@ namespace aspect
 
       const std::vector<double> volume_fractions = MaterialUtilities::compute_volume_fractions(composition, get_volumetric_composition_mask());
 
-      const std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities =
+      const CalculateIsostrainViscosities calculate_viscosities =
         calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law, yield_mechanism, current_cell);
 
       std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(),volume_fractions.end());
-      plastic_yielding = calculate_viscosities.second[std::distance(volume_fractions.begin(),max_composition)];
+      plastic_yielding = calculate_viscosities.composition_yielding[std::distance(volume_fractions.begin(),max_composition)];
 
       return plastic_yielding;
     }
@@ -126,12 +126,12 @@ namespace aspect
        * as documented in evaluate.
        */
 
-      const std::pair<std::vector<double>, std::vector<bool>> calculate_viscosities =
+      const CalculateIsostrainViscosities calculate_viscosities =
                                                              calculate_isostrain_viscosities(in, 0, volume_fractions, viscous_flow_law,
                                                                  yield_mechanism, in.current_cell, phase_function_values);
 
       std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(), volume_fractions.end());
-      const bool plastic_yielding = calculate_viscosities.second[std::distance(volume_fractions.begin(), max_composition)];
+      const bool plastic_yielding = calculate_viscosities.composition_yielding[std::distance(volume_fractions.begin(), max_composition)];
 
       return plastic_yielding;
     }
@@ -173,7 +173,7 @@ namespace aspect
 
 
     template <int dim>
-    std::pair<std::vector<double>, std::vector<bool> >
+    CalculateIsostrainViscosities
     ViscoPlastic<dim>::
     calculate_isostrain_viscosities (const MaterialModel::MaterialModelInputs<dim> &in,
                                      const unsigned int i,
@@ -183,6 +183,8 @@ namespace aspect
                                      typename DoFHandler<dim>::active_cell_iterator current_cell,
                                      const std::vector<double> &phase_function_values) const
     {
+      CalculateIsostrainViscosities output_parameters;
+
       // Initialize or fill variables used to calculate viscosities
       std::vector<bool> composition_yielding(volume_fractions.size(), false);
       std::vector<double> composition_viscosities(volume_fractions.size(), numbers::signaling_nan<double>());
@@ -444,8 +446,12 @@ namespace aspect
 
           // Step 5: limit the viscosity with specified minimum and maximum bounds
           composition_viscosities[j] = std::min(std::max(viscosity_yield, min_visc), max_visc);
+
+          // Fill output parameters
+          output_parameters.composition_yielding = composition_yielding;
+          output_parameters.composition_viscosities = composition_viscosities;
         }
-      return std::make_pair (composition_viscosities, composition_yielding);
+      return output_parameters;
     }
 
 
@@ -636,7 +642,7 @@ namespace aspect
                 calculate_isostrain_viscosities(in_derivatives, i, volume_fractions,
                                                 viscous_flow_law, yield_mechanism,
                                                 in.current_cell,
-                                                phase_function_values).first;
+                                                phase_function_values).composition_viscosities;
 
               // For each composition of the independent component, compute the derivative.
               for (unsigned int composition_index = 0; composition_index < eta_component.size(); ++composition_index)
@@ -667,7 +673,7 @@ namespace aspect
             calculate_isostrain_viscosities(in_derivatives, i, volume_fractions,
                                             viscous_flow_law, yield_mechanism,
                                             in.current_cell,
-                                            phase_function_values).first;
+                                            phase_function_values).composition_viscosities;
 
           for (unsigned int composition_index = 0; composition_index < viscosity_difference.size(); ++composition_index)
             {
@@ -833,7 +839,7 @@ namespace aspect
               // isostrain amongst all compositions, allowing calculation of the viscosity ratio.
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
-              const std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities =
+              const CalculateIsostrainViscosities calculate_viscosities =
                 calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
                                                 yield_mechanism, in.current_cell, phase_function_values);
 
@@ -841,19 +847,19 @@ namespace aspect
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
               // creep (where n_diff=1) viscosities are stress and strain-rate independent, so the calculation
               // of compositional field viscosities is consistent with any averaging scheme.
-              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, calculate_viscosities.first, viscosity_averaging);
+              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, calculate_viscosities.composition_viscosities, viscosity_averaging);
 
               // Decide based on the maximum composition if material is yielding.
               // This avoids for example division by zero for harmonic averaging (as plastic_yielding
               // holds values that are either 0 or 1), but might not be consistent with the viscosity
               // averaging chosen.
               std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(),volume_fractions.end());
-              plastic_yielding = calculate_viscosities.second[std::distance(volume_fractions.begin(),max_composition)];
+              plastic_yielding = calculate_viscosities.composition_yielding[std::distance(volume_fractions.begin(),max_composition)];
 
               // Compute viscosity derivatives if they are requested
               if (MaterialModel::MaterialModelDerivatives<dim> *derivatives =
                     out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim> >())
-                compute_viscosity_derivatives(i, volume_fractions, calculate_viscosities.first, in, out, phase_function_values);
+                compute_viscosity_derivatives(i, volume_fractions, calculate_viscosities.composition_viscosities, in, out, phase_function_values);
             }
 
           // Now compute changes in the compositional fields (i.e. the accumulated strain).
