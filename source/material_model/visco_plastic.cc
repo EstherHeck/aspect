@@ -127,8 +127,8 @@ namespace aspect
        */
 
       const CalculateIsostrainViscosities calculate_viscosities =
-                                                             calculate_isostrain_viscosities(in, 0, volume_fractions, viscous_flow_law,
-                                                                 yield_mechanism, in.current_cell, phase_function_values);
+        calculate_isostrain_viscosities(in, 0, volume_fractions, viscous_flow_law,
+                                        yield_mechanism, in.current_cell, phase_function_values);
 
       std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(), volume_fractions.end());
       const bool plastic_yielding = calculate_viscosities.composition_yielding[std::distance(volume_fractions.begin(), max_composition)];
@@ -188,6 +188,7 @@ namespace aspect
       // Initialize or fill variables used to calculate viscosities
       std::vector<bool> composition_yielding(volume_fractions.size(), false);
       std::vector<double> composition_viscosities(volume_fractions.size(), numbers::signaling_nan<double>());
+      std::vector<double> mod_friction_angles(volume_fractions.size(), numbers::signaling_nan<double>());
 
       // Initialize or fill variables needed to calculate current_edot_ii
       /* needed if compute_edot_ii is used
@@ -446,10 +447,12 @@ namespace aspect
 
           // Step 5: limit the viscosity with specified minimum and maximum bounds
           composition_viscosities[j] = std::min(std::max(viscosity_yield, min_visc), max_visc);
+          mod_friction_angles[j] = current_friction;
 
           // Fill output parameters
           output_parameters.composition_yielding = composition_yielding;
           output_parameters.composition_viscosities = composition_viscosities;
+          output_parameters.current_friction_angles = mod_friction_angles;
         }
       return output_parameters;
     }
@@ -467,9 +470,10 @@ namespace aspect
     {
       PlasticAdditionalOutputs<dim> *plastic_out = out.template get_additional_output<PlasticAdditionalOutputs<dim> >();
 
+      /*
       const bool use_reference_strainrate = (this->get_timestep_number() == 0) &&
                                             (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
-      const double dte = elastic_rheology.elastic_timestep();
+      const double dte = elastic_rheology.elastic_timestep(); */
 
       if (plastic_out != nullptr)
         {
@@ -477,10 +481,10 @@ namespace aspect
           plastic_out->friction_angles[i] = 0;
           plastic_out->yielding[i] = plastic_yielding ? 1 : 0;
 
-          const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
+          //const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
 
           for (unsigned int j=0; j < volume_fractions.size(); ++j)
-            {
+            {/*
               // edot_ii  needed for the rate and state dependence of the friction angle
               double current_edot_ii = MaterialUtilities::compute_current_edot_ii(in.composition[i],
                                                                                   ref_strain_rate,
@@ -517,6 +521,7 @@ namespace aspect
                   const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, in.pressure[i], temperature_for_viscosity, j,
                                                                                            phase_function_values,
                                                                                            phase_function.n_phase_transitions_for_each_composition());
+                  
                   switch (viscous_flow_law)
                     {
                       case diffusion:
@@ -572,15 +577,17 @@ namespace aspect
                     }
                   current_stress = current_stress - radiation_damping_term;
                   current_edot_ii = current_stress / viscosity_pre_yield;
-                }
+                }*/
 
               // set to weakened values, or unweakened values when strain weakening is not used
               // Calculate the strain weakening factors and weakened values
               const std::array<double, 3> weakening_factors = strain_rheology.compute_strain_weakening_factors(j, in.composition[i]);
               plastic_out->cohesions[i]   += volume_fractions[j] * (drucker_prager_parameters.cohesions[j] * weakening_factors[0]);
               // Also convert radians to degrees
-              double current_friction = drucker_prager_parameters.angles_internal_friction[j] * weakening_factors[1];
-              current_friction = friction_options.compute_dependent_friction_angle(current_edot_ii, j, in.composition[i], in.current_cell, current_friction, in.position[i]);
+              double current_friction = calculate_isostrain_viscosities(in, i, volume_fractions,
+                                                viscous_flow_law, yield_mechanism,
+                                                in.current_cell,
+                                                phase_function_values).current_friction_angles[j] * weakening_factors[1];
               plastic_out->friction_angles[i] += 180.0/numbers::PI * volume_fractions[j] * current_friction;
 
               /*// chasing the origin of negative friction angles

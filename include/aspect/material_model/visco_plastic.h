@@ -91,6 +91,11 @@ namespace aspect
        * The composition yielding.
        */
       std::vector<bool> composition_yielding;
+
+      /**
+       * the current angle of friction
+       */
+      std::vector<double> current_friction_angles;
     };
 
     /**
