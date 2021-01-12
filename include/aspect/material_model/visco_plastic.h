@@ -80,7 +80,7 @@ namespace aspect
     /**
        * A data structure with the output of calculate_isostrain_viscosities.
        */
-    struct CalculateIsostrainViscosities
+    struct IsostrainViscosities
     {
       /**
        * The composition viscosity.
@@ -355,7 +355,7 @@ namespace aspect
          * This function calculates viscosities assuming that all the compositional fields
          * experience the same strain rate (isostrain).
          */
-        CalculateIsostrainViscosities
+        IsostrainViscosities
         calculate_isostrain_viscosities ( const MaterialModel::MaterialModelInputs<dim> &in,
                                           const unsigned int i,
                                           const std::vector<double> &volume_fractions,
