@@ -217,7 +217,7 @@ namespace aspect
           }
           // if friction negative, that does not make sense and will get rate and state friction 
           // into trouble, so return some very small value
-        if (current_friction < 0)
+        if (current_friction < 1e-30)
           current_friction = 1e-30;
         return current_friction;
       }
@@ -256,7 +256,7 @@ namespace aspect
                                * exp( - ((current_edot_ii * cellsize) * this->get_timestep()) / critical_slip_distance);
 
         // TODO: make dt the min theta?
-        if (current_theta <= 0)
+        if (current_theta < 1e-50)
           current_theta = 1e-50;
         return current_theta;
       }
