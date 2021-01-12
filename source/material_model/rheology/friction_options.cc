@@ -215,8 +215,10 @@ namespace aspect
               break;
             }
           }
+          // if friction negative, that does not make sense and will get rate and state friction 
+          // into trouble, so return some very small value
         if (current_friction < 0)
-          current_friction = 0;
+          current_friction = 1e-30;
         return current_friction;
       }
 
@@ -255,7 +257,7 @@ namespace aspect
 
         // TODO: make dt the min theta?
         if (current_theta <= 0)
-          current_theta = 1e-20;
+          current_theta = 1e-50;
         return current_theta;
       }
 
