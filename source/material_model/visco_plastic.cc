@@ -277,8 +277,8 @@ namespace aspect
                   const bool use_reference_strainrate = (this->get_timestep_number() == 0) &&
                                                         (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
                   const double dte = rheology->elastic_rheology.elastic_timestep();
-                  rheology->friction_options.compute_theta_reaction_terms(i, in, get_min_strain_rate(), rheology->ref_strain_rate, rheology->use_elasticity,
-                                                                use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
+                  rheology->friction_options.compute_theta_reaction_terms(i, volume_fractions, in, get_min_strain_rate(), rheology->ref_strain_rate, rheology->use_elasticity,
+                                                                          use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
                 }
             }
 
@@ -295,148 +295,150 @@ namespace aspect
 
 
 
-      template <int dim>
-      double
-      ViscoPlastic<dim>::
-      reference_viscosity () const
-      {
-        return rheology->ref_visc;
-      }
-
-
-
-      template <int dim>
-      bool
-      ViscoPlastic<dim>::
-      is_compressible () const
-      {
-        return equation_of_state.is_compressible();
-      }
-
-
-
-      template <int dim>
-      double ViscoPlastic<dim>::
-      get_min_strain_rate () const
-      {
-        return rheology->min_strain_rate;
-      }
-
-
-
-      template <int dim>
-      void
-      ViscoPlastic<dim>::declare_parameters (ParameterHandler &prm)
-      {
-        prm.enter_subsection("Material model");
-        {
-          prm.enter_subsection ("Visco Plastic");
-          {
-            MaterialUtilities::PhaseFunction<dim>::declare_parameters(prm);
-
-            EquationOfState::MulticomponentIncompressible<dim>::declare_parameters (prm);
-
-            Rheology::ViscoPlastic<dim>::declare_parameters(prm);
-
-            // Equation of state parameters
-            prm.declare_entry ("Thermal diffusivities", "0.8e-6",
-                               Patterns::List(Patterns::Double (0.)),
-                               "List of thermal diffusivities, for background material and compositional fields, "
-                               "for a total of N+1 values, where N is the number of compositional fields. "
-                               "If only one value is given, then all use the same value.  "
-                               "Units: \\si{\\meter\\squared\\per\\second}.");
-            prm.declare_entry ("Define thermal conductivities","false",
-                               Patterns::Bool (),
-                               "Whether to directly define thermal conductivities for each compositional field "
-                               "instead of calculating the values through the specified thermal diffusivities, "
-                               "densities, and heat capacities. ");
-            prm.declare_entry ("Thermal conductivities", "3.0",
-                               Patterns::List(Patterns::Double(0)),
-                               "List of thermal conductivities, for background material and compositional fields, "
-                               "for a total of N+1 values, where N is the number of compositional fields. "
-                               "If only one value is given, then all use the same value. "
-                               "Units: \\si{\\watt\\per\\meter\\per\\kelvin}.");
-          }
-          prm.leave_subsection();
-        }
-        prm.leave_subsection();
-      }
-
-
-
-      template <int dim>
-      void
-      ViscoPlastic<dim>::parse_parameters (ParameterHandler &prm)
-      {
-        // increment by one for background:
-        const unsigned int n_fields = this->n_compositional_fields() + 1;
-
-        prm.enter_subsection("Material model");
-        {
-          prm.enter_subsection ("Visco Plastic");
-          {
-            // Phase transition parameters
-            phase_function.initialize_simulator (this->get_simulator());
-            phase_function.parse_parameters (prm);
-
-            std::vector<unsigned int> n_phase_transitions_for_each_composition
-            (phase_function.n_phase_transitions_for_each_composition());
-
-            // We require one more entry for density, etc as there are phase transitions
-            // (for the low-pressure phase before any transition).
-            for (unsigned int &n : n_phase_transitions_for_each_composition)
-              n += 1;
-
-            // Equation of state parameters
-            equation_of_state.initialize_simulator (this->get_simulator());
-            equation_of_state.parse_parameters (prm,
-                                                std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
-
-
-            thermal_diffusivities = Utilities::possibly_extend_from_1_to_N (Utilities::string_to_double(Utilities::split_string_list(prm.get("Thermal diffusivities"))),
-                                                                            n_fields,
-                                                                            "Thermal diffusivities");
-
-            define_conductivities = prm.get_bool ("Define thermal conductivities");
-
-            thermal_conductivities = Utilities::possibly_extend_from_1_to_N (Utilities::string_to_double(Utilities::split_string_list(prm.get("Thermal conductivities"))),
-                                                                             n_fields,
-                                                                             "Thermal conductivities");
-
-            rheology = std_cxx14::make_unique<Rheology::ViscoPlastic<dim>>();
-            rheology->initialize_simulator (this->get_simulator());
-            rheology->parse_parameters(prm, std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
-
-          }
-          prm.leave_subsection();
-        }
-        prm.leave_subsection();
-
-        // Declare dependencies on solution variables
-        this->model_dependence.viscosity = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::strain_rate | NonlinearDependence::compositional_fields;
-        this->model_dependence.density = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::compositional_fields;
-        this->model_dependence.compressibility = NonlinearDependence::none;
-        this->model_dependence.specific_heat = NonlinearDependence::none;
-        this->model_dependence.thermal_conductivity = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::compositional_fields;
-      }
-
-
-
-      template <int dim>
-      void
-      ViscoPlastic<dim>::create_additional_named_outputs (MaterialModel::MaterialModelOutputs<dim> &out) const
-      {
-        rheology->create_plastic_outputs(out);
-
-        if (rheology->use_elasticity)
-          rheology->elastic_rheology.create_elastic_outputs(out);
-      }
-
+    template <int dim>
+    double
+    ViscoPlastic<dim>::
+    reference_viscosity () const
+    {
+      return rheology->ref_visc;
     }
+
+
+
+    template <int dim>
+    bool
+    ViscoPlastic<dim>::
+    is_compressible () const
+    {
+      return equation_of_state.is_compressible();
+    }
+
+
+
+    template <int dim>
+    double ViscoPlastic<dim>::
+    get_min_strain_rate () const
+    {
+      return rheology->min_strain_rate;
+    }
+
+
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::declare_parameters (ParameterHandler &prm)
+    {
+      prm.enter_subsection("Material model");
+      {
+        prm.enter_subsection ("Visco Plastic");
+        {
+          MaterialUtilities::PhaseFunction<dim>::declare_parameters(prm);
+
+          EquationOfState::MulticomponentIncompressible<dim>::declare_parameters (prm);
+
+          Rheology::ViscoPlastic<dim>::declare_parameters(prm);
+
+          // Equation of state parameters
+          prm.declare_entry ("Thermal diffusivities", "0.8e-6",
+                             Patterns::List(Patterns::Double (0.)),
+                             "List of thermal diffusivities, for background material and compositional fields, "
+                             "for a total of N+1 values, where N is the number of compositional fields. "
+                             "If only one value is given, then all use the same value.  "
+                             "Units: \\si{\\meter\\squared\\per\\second}.");
+          prm.declare_entry ("Define thermal conductivities","false",
+                             Patterns::Bool (),
+                             "Whether to directly define thermal conductivities for each compositional field "
+                             "instead of calculating the values through the specified thermal diffusivities, "
+                             "densities, and heat capacities. ");
+          prm.declare_entry ("Thermal conductivities", "3.0",
+                             Patterns::List(Patterns::Double(0)),
+                             "List of thermal conductivities, for background material and compositional fields, "
+                             "for a total of N+1 values, where N is the number of compositional fields. "
+                             "If only one value is given, then all use the same value. "
+                             "Units: \\si{\\watt\\per\\meter\\per\\kelvin}.");
+        }
+        prm.leave_subsection();
+      }
+      prm.leave_subsection();
+    }
+
+
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::parse_parameters (ParameterHandler &prm)
+    {
+      // increment by one for background:
+      const unsigned int n_fields = this->n_compositional_fields() + 1;
+
+      prm.enter_subsection("Material model");
+      {
+        prm.enter_subsection ("Visco Plastic");
+        {
+          // Phase transition parameters
+          phase_function.initialize_simulator (this->get_simulator());
+          phase_function.parse_parameters (prm);
+
+          std::vector<unsigned int> n_phase_transitions_for_each_composition
+          (phase_function.n_phase_transitions_for_each_composition());
+
+          // We require one more entry for density, etc as there are phase transitions
+          // (for the low-pressure phase before any transition).
+          for (unsigned int &n : n_phase_transitions_for_each_composition)
+            n += 1;
+
+          // Equation of state parameters
+          equation_of_state.initialize_simulator (this->get_simulator());
+          equation_of_state.parse_parameters (prm,
+                                              std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+
+
+          thermal_diffusivities = Utilities::possibly_extend_from_1_to_N (Utilities::string_to_double(Utilities::split_string_list(prm.get("Thermal diffusivities"))),
+                                                                          n_fields,
+                                                                          "Thermal diffusivities");
+
+          define_conductivities = prm.get_bool ("Define thermal conductivities");
+
+          thermal_conductivities = Utilities::possibly_extend_from_1_to_N (Utilities::string_to_double(Utilities::split_string_list(prm.get("Thermal conductivities"))),
+                                                                           n_fields,
+                                                                           "Thermal conductivities");
+
+          rheology = std_cxx14::make_unique<Rheology::ViscoPlastic<dim>>();
+          rheology->initialize_simulator (this->get_simulator());
+          rheology->parse_parameters(prm, std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+
+        }
+        prm.leave_subsection();
+      }
+      prm.leave_subsection();
+
+      // Declare dependencies on solution variables
+      this->model_dependence.viscosity = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::strain_rate | NonlinearDependence::compositional_fields;
+      this->model_dependence.density = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::compositional_fields;
+      this->model_dependence.compressibility = NonlinearDependence::none;
+      this->model_dependence.specific_heat = NonlinearDependence::none;
+      this->model_dependence.thermal_conductivity = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::compositional_fields;
+    }
+
+
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::create_additional_named_outputs (MaterialModel::MaterialModelOutputs<dim> &out) const
+    {
+      rheology->create_plastic_outputs(out);
+
+      if (rheology->use_elasticity)
+        rheology->elastic_rheology.create_elastic_outputs(out);
+    }
+
   }
+}
 
 // explicit instantiations
-  namespace aspect
+namespace aspect
+{
+  namespace MaterialModel
   {
     ASPECT_REGISTER_MATERIAL_MODEL(ViscoPlastic,
                                    "visco plastic",
@@ -651,3 +653,4 @@ namespace aspect
                                    "parameters are read from the parameter file in subsection "
                                    " 'Material model/Visco Plastic'.")
   }
+}
