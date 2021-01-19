@@ -758,7 +758,6 @@ namespace aspect
             plastic_out->friction_angles[i] = 0;
             plastic_out->yielding[i] = plastic_yielding ? 1 : 0;
 
-            //const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
             for (unsigned int j=0; j < volume_fractions.size(); ++j)
               {
                 // set to weakened values, or unweakened values when strain weakening is not used
