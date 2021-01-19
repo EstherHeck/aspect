@@ -217,8 +217,8 @@ namespace aspect
           }
           // if friction negative, that does not make sense and will get rate and state friction 
           // into trouble, so return some very small value
-        if (current_friction < 1e-30)
-          current_friction = 1e-30;
+        //if (current_friction < 1e-30)
+        //  current_friction = 1e-30;
         return current_friction;
       }
 
@@ -255,9 +255,12 @@ namespace aspect
                                (theta_old - critical_slip_distance / ( cellsize * current_edot_ii))
                                * exp( - ((current_edot_ii * cellsize) * this->get_timestep()) / critical_slip_distance);
 
+
+                std::cout << "#### Compute theta!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
+                std::cout << "Previous theta was: " << theta_old << std::endl;
         // TODO: make dt the min theta?
-        if (current_theta < 1e-50)
-          current_theta = 1e-50;
+        //if (current_theta < 1e-50)
+        //  current_theta = 1e-50;
         return current_theta;
       }
 
@@ -301,7 +304,7 @@ namespace aspect
             const double theta_increment = current_theta - theta_old;
 
 
-                std::cout << "Reaction terms!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
+                std::cout << "#*#* Reaction terms!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
                 std::cout << "Previous theta was: " << theta_old << std::endl;
             /*if (current_theta <= 0)
               {
