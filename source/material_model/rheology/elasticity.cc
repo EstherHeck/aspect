@@ -125,7 +125,7 @@ namespace aspect
           AssertThrow(false, ExcMessage("'Use fixed elastic time step' must be set to 'true' or 'false'"));
 
         use_stress_averaging = prm.get_bool ("Use stress averaging");
-        
+
         stabilization_time_scale_factor = prm.get_double ("Stabilization time scale factor");
 
         fixed_elastic_time_step = prm.get_double ("Fixed elastic time step");
