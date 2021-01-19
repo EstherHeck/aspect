@@ -299,6 +299,10 @@ namespace aspect
             const double theta_old = in.composition[q][theta_position_tmp];
             const double current_theta = compute_theta(theta_old, current_edot_ii, cellsize);
             const double theta_increment = current_theta - theta_old;
+
+
+                std::cout << "Reaction terms!"<< std::endl << "Theta is: " << current_theta << " at time " << this->get_time() << std::endl;
+                std::cout << "Previous theta was: " << theta_old << std::endl;
             /*if (current_theta <= 0)
               {
                 std::cout << "Reaction terms!"<< std::endl << "Theta is zero/negative: " << current_theta << " at time " << this->get_time() << std::endl;
