@@ -133,6 +133,22 @@ namespace aspect
           edot_ii = std::max(std::sqrt(std::fabs(second_invariant(deviator(in.strain_rate[i])))),
                              min_strain_rate);
 
+        // if rate and state friction is used, this index is needed, as it will be used to always assume yielding
+        // conditions inside the fault. default is so high it should never unintentionally be reached.
+        unsigned int fault_material_index = 1000;
+        if (friction_options.get_use_theta())
+          {
+            // TODO: make this a bit more flexible name-wise, like let the user define which materials should be
+            // considered. Or which strategy. Could also be all, or take a and b as a proxy.
+            // TODO: should be done if this is > 70 or so %. Can be circumvented right now by using max
+            // composition for viscosity averaging
+            AssertThrow(this->introspection().compositional_name_exists("fault"),
+                        ExcMessage("Material model with rate-and-state friction only works "
+                                   "if there is a compositional field that is called fault. For this composition "
+                                   "yielding is always assumed due to the rate and state framework."));
+            fault_material_index = this->introspection().compositional_index_for_name("fault");
+          }
+
         // Calculate viscosities for each of the individual compositional phases
         for (unsigned int j=0; j < volume_fractions.size(); ++j)
           {
@@ -792,6 +808,7 @@ namespace aspect
             plastic_out->friction_angles[i] = 0;
             plastic_out->yielding[i] = plastic_yielding ? 1 : 0;
 
+            //const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
             for (unsigned int j=0; j < volume_fractions.size(); ++j)
               {
                 // set to weakened values, or unweakened values when strain weakening is not used
