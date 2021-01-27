@@ -281,15 +281,15 @@ namespace aspect
                                                                           use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
                 }
             }
+        }
 
-          // If we use the full strain tensor, compute the change in the individual tensor components.
-          rheology->strain_rheology.compute_finite_strain_reaction_terms(in, out);
+      // If we use the full strain tensor, compute the change in the individual tensor components.
+      rheology->strain_rheology.compute_finite_strain_reaction_terms(in, out);
 
-          if (rheology->use_elasticity)
-            {
-              rheology->elastic_rheology.fill_elastic_force_outputs(in, average_elastic_shear_moduli, out);
-              rheology->elastic_rheology.fill_reaction_outputs(in, average_elastic_shear_moduli, out);
-            }
+      if (rheology->use_elasticity)
+        {
+          rheology->elastic_rheology.fill_elastic_force_outputs(in, average_elastic_shear_moduli, out);
+          rheology->elastic_rheology.fill_reaction_outputs(in, average_elastic_shear_moduli, out);
         }
     }
 
