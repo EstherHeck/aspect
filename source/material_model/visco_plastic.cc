@@ -796,7 +796,7 @@ namespace aspect
                   const bool use_reference_strainrate = (this->get_timestep_number() == 0) &&
                                                         (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
                   const double dte = elastic_rheology.elastic_timestep();
-                  friction_options.compute_theta_reaction_terms(i, in, min_strain_rate, ref_strain_rate, use_elasticity,
+                  friction_options.compute_theta_reaction_terms(i, volume_fractions, in, min_strain_rate, ref_strain_rate, use_elasticity,
                                                                 use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
                 }
             }
