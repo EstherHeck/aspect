@@ -549,31 +549,30 @@ namespace aspect
                                                                         in.current_cell,
                                                                         phase_function_values).current_friction_angles[j] * weakening_factors[1];
               plastic_out->friction_angles[i] += 180.0/numbers::PI * volume_fractions[j] * current_friction;
+            }
+          /*// chasing the origin of negative friction angles
+          if (current_friction <= 0)
+            {
+              std::cout << "additional outputs!" << std::endl << "current_friction is zero/negative!"<<std::endl;
+              std::cout << " at time " << this->get_time() << std::endl;
+              std::cout << "current edot ii is " << current_edot_ii<< std::endl;
+              std::cout << "the friction coeff at this time is: " << tan(current_friction) << " and the friction angle in RAD is " << current_friction << std::endl;
+              std::cout << "the friction angle in degree is: " << current_friction*180/3.1516 << std::endl;
+            } */
 
-              /*// chasing the origin of negative friction angles
-              if (current_friction <= 0)
+          // if rate and state friction is used, the additional output fields must be filled
+          if (friction_options.get_use_theta())
+            {
+              plastic_out->RSF_a[i] = 0;
+              plastic_out->RSF_b[i] = 0;
+              plastic_out->RSF_L[i] = 0;
+
+              for (unsigned int j=0; j < volume_fractions.size(); ++j)
                 {
-                  std::cout << "additional outputs!" << std::endl << "current_friction is zero/negative!"<<std::endl;
-                  std::cout << " at time " << this->get_time() << std::endl;
-                  std::cout << "current edot ii is " << current_edot_ii<< std::endl;
-                  std::cout << "the friction coeff at this time is: " << tan(current_friction) << " and the friction angle in RAD is " << current_friction << std::endl;
-                  std::cout << "the friction angle in degree is: " << current_friction*180/3.1516 << std::endl;
-                } */
-
-            // if rate and state friction is used, the additional output fields must be filled
-            if (friction_options.get_use_theta())
-              {
-                plastic_out->RSF_a[i] = 0;
-                plastic_out->RSF_b[i] = 0;
-                plastic_out->RSF_L[i] = 0;
-
-                for (unsigned int j=0; j < volume_fractions.size(); ++j)
-                  {
-                    plastic_out->RSF_a[i] += volume_fractions[j] * friction_options.calculate_depth_dependent_a_and_b(in.position[i], j).first;
-                    plastic_out->RSF_b[i] += volume_fractions[j] * friction_options.calculate_depth_dependent_a_and_b(in.position[i], j).second;
-                    plastic_out->RSF_L[i] += volume_fractions[j] * friction_options.get_critical_slip_distance(in.position[i], j);
-                  }
-              }
+                  plastic_out->RSF_a[i] += volume_fractions[j] * friction_options.calculate_depth_dependent_a_and_b(in.position[i], j).first;
+                  plastic_out->RSF_b[i] += volume_fractions[j] * friction_options.calculate_depth_dependent_a_and_b(in.position[i], j).second;
+                  plastic_out->RSF_L[i] += volume_fractions[j] * friction_options.get_critical_slip_distance(in.position[i], j);
+                }
             }
         }
     }
