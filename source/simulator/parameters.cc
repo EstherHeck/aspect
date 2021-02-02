@@ -217,6 +217,17 @@ namespace aspect
                        "the temperature and composition equations once at the beginning of each time step and "
                        "then iterates out the solution of the Stokes equation, using Newton iterations for the "
                        "Stokes system. "
+                       "The `iterated Advection and defect correction Stokes' scheme iterates by alternating the "
+                       "solution of the temperature, composition and Stokes equations, using Picard iterations for "
+                       "the temperature and composition, and defect correction Picard iterations for the Stokes system. "
+                       "The `single Advection, iterated defect correction Stokes' scheme solves "
+                       "the temperature and composition equations once at the beginning of each time step and "
+                       "then iterates out the solution of the Stokes equation, using defect correction Picard "
+                       "iterations for the Stokes system. "
+                       "The `no Advection, iterated defect correction Stokes' scheme solves "
+                       "the temperature and composition equations once at the beginning of each time step and "
+                       "then iterates out the solution of the Stokes equation, using defect correction Picard "
+                       "iterations for the Stokes system. "
                        "The `first timestep only, single Stokes' scheme solves the Stokes equations exactly "
                        "once, at the first time step. No nonlinear iterations are done, and the temperature and "
                        "composition systems are not solved. "
@@ -1627,9 +1638,9 @@ namespace aspect
       use_discontinuous_composition_discretization
         = prm.get_bool("Use discontinuous composition discretization");
 
-      Assert(use_discontinuous_composition_discretization == true || composition_degree > 0,
-             ExcMessage("Using a composition polynomial degree of 0 (cell-wise constant composition) "
-                        "is only supported if a discontinuous composition discretization is selected."));
+      AssertThrow(use_discontinuous_composition_discretization == true || composition_degree > 0,
+                  ExcMessage("Using a composition polynomial degree of 0 (cell-wise constant composition) "
+                             "is only supported if a discontinuous composition discretization is selected."));
 
       prm.enter_subsection ("Stabilization parameters");
       {
@@ -1730,19 +1741,19 @@ namespace aspect
       // check that the names use only allowed characters, are not empty strings and are unique
       for (unsigned int i=0; i<names_of_compositional_fields.size(); ++i)
         {
-          Assert (names_of_compositional_fields[i].find_first_not_of("abcdefghijklmnopqrstuvwxyz"
-                                                                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                                                     "0123456789_") == std::string::npos,
-                  ExcMessage("Invalid character in field " + names_of_compositional_fields[i] + ". "
-                             "Names of compositional fields should consist of a "
-                             "combination of letters, numbers and underscores."));
-          Assert (names_of_compositional_fields[i].size() > 0,
-                  ExcMessage("Invalid name of field " + names_of_compositional_fields[i] + ". "
-                             "Names of compositional fields need to be non-empty."));
+          AssertThrow (names_of_compositional_fields[i].find_first_not_of("abcdefghijklmnopqrstuvwxyz"
+                                                                          "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                                                          "0123456789_") == std::string::npos,
+                       ExcMessage("Invalid character in field " + names_of_compositional_fields[i] + ". "
+                                  "Names of compositional fields should consist of a "
+                                  "combination of letters, numbers and underscores."));
+          AssertThrow (names_of_compositional_fields[i].size() > 0,
+                       ExcMessage("Invalid name of field " + names_of_compositional_fields[i] + ". "
+                                  "Names of compositional fields need to be non-empty."));
           for (unsigned int j=0; j<i; ++j)
-            Assert (names_of_compositional_fields[i] != names_of_compositional_fields[j],
-                    ExcMessage("Names of compositional fields have to be unique! " + names_of_compositional_fields[i] +
-                               " is used more than once."));
+            AssertThrow (names_of_compositional_fields[i] != names_of_compositional_fields[j],
+                         ExcMessage("Names of compositional fields have to be unique! " + names_of_compositional_fields[i] +
+                                    " is used more than once."));
         }
 
       // default names if list is empty

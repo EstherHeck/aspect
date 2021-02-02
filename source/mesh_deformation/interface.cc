@@ -354,6 +354,8 @@ namespace aspect
 
       TimerOutput::Scope timer (sim.computing_timer, "Mesh deformation");
 
+      old_mesh_displacements = mesh_displacements;
+
       // Make the constraints for the elliptic problem.
       make_constraints();
 
@@ -843,7 +845,7 @@ namespace aspect
                     else
                       {
                         for (unsigned int d=1; d<dim; ++d)
-                          surface_point[d] = natural_coord[d];
+                          surface_point[d-1] = natural_coord[d];
                       }
                     // Get the topography at this point.
                     const double topo = this->get_initial_topography_model().value(surface_point);
@@ -941,6 +943,7 @@ namespace aspect
       // This will initialize the mesh displacement and free surface
       // mesh velocity vectors with zero-valued entries.
       mesh_displacements.reinit(mesh_locally_owned, mesh_locally_relevant, sim.mpi_communicator);
+      old_mesh_displacements.reinit(mesh_locally_owned, mesh_locally_relevant, sim.mpi_communicator);
       initial_topography.reinit(mesh_locally_owned, mesh_locally_relevant, sim.mpi_communicator);
       fs_mesh_velocity.reinit(mesh_locally_owned, mesh_locally_relevant, sim.mpi_communicator);
 
@@ -1008,6 +1011,7 @@ namespace aspect
     }
 
 
+
     template <int dim>
     const LinearAlgebra::Vector &
     MeshDeformationHandler<dim>::get_mesh_displacements () const
@@ -1022,6 +1026,7 @@ namespace aspect
     {
       return initial_topography;
     }
+
 
 
     template <int dim>
