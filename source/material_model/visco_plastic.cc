@@ -266,13 +266,13 @@ namespace aspect
                 }
 
               // Update the state variable theta if used
-              if (friction_options.get_use_theta())
+              if (rheology->friction_options.get_use_theta())
                 {
                   const bool use_reference_strainrate = (this->get_timestep_number() == 0) &&
                                                         (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
-                  const double dte = elastic_rheology.elastic_timestep();
-                  friction_options.compute_theta_reaction_terms(i, volume_fractions, in, min_strain_rate, ref_strain_rate, use_elasticity,
-                                                                use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
+                  const double dte = rheology->elastic_rheology.elastic_timestep();
+                  rheology->friction_options.compute_theta_reaction_terms(i, volume_fractions, in, get_min_strain_rate(), rheology->ref_strain_rate, rheology->use_elasticity,
+                                                                          use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
                 }
             }
         }
