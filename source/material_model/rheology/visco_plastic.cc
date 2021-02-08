@@ -532,6 +532,10 @@ namespace aspect
                                                                composition_viscosities,
                                                                composition_dviscosities_dpressure,
                                                                viscosity_averaging_p);
+            std::cout << "viscosity_derivative_wrt_strain_rate : " << derivatives->viscosity_derivative_wrt_strain_rate[i] << std::endl;
+            std::cout << "viscosity_derivative_wrt_pressure    : " << derivatives->viscosity_derivative_wrt_pressure[i] << std::endl;
+            std::cout << "composition_viscosities              : " << composition_viscosities << std::endl;
+            std::cout << "composition_viscosities_derivatives  : " << composition_viscosities_derivatives << std::endl;
           }
       }
 
