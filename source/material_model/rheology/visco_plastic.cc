@@ -336,7 +336,6 @@ namespace aspect
                 else
                   {
                     // TODO: use the plastic strain rate instead of current_edot_ii
-                    // TODO: more elaborate way to determine cellsize
                     // TODO: this is not exactly the right way to get the density, as it i only reference densities.
                     // ideally, you would take the actual densities from out.densities[I],
                     // i.e. computed as out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic);
@@ -347,7 +346,7 @@ namespace aspect
                     radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                              / (2 * sqrt(elastic_shear_moduli[j] / reference_density));
                     current_stress = current_stress - radiation_damping_term;
-                    current_edot_ii = current_stress / viscosity_pre_yield;
+                    current_edot_ii = std::max(current_stress / viscosity_pre_yield, min_strain_rate);
                   }
               }
             std::cout << " raditaion damping term    is  : " << radiation_damping_term << std::endl;
