@@ -313,7 +313,9 @@ namespace aspect
               }
             const double theta_increment = current_theta - theta_old;
 
-            std::cout << "Reaction terms - Theta: " << theta_increment << std::endl;
+            std::cout << "Reaction terms - Theta_increment : " << theta_increment << std::endl;
+            std::cout << "Reaction terms - Theta_current : " << current_theta << std::endl;
+            std::cout << "Reaction terms - Theta_old : " << old_theta << std::endl;
 
             out.reaction_terms[q][theta_position_tmp] = theta_increment;
           }
