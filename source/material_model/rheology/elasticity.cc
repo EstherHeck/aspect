@@ -319,11 +319,12 @@ namespace aspect
 
                 // Fill reaction terms
                 for (unsigned int j = 0; j < SymmetricTensor<2,dim>::n_independent_components ; ++j)
+                {
                   std::cout << 'Reaction terms - stress - component' << j << ': ' <<  -stress_old[SymmetricTensor<2,dim>::unrolled_to_component_indices(j)]
                                              + stress_new[SymmetricTensor<2,dim>::unrolled_to_component_indices(j)] << std::endl;
                   out.reaction_terms[i][j] = -stress_old[SymmetricTensor<2,dim>::unrolled_to_component_indices(j)]
                                              + stress_new[SymmetricTensor<2,dim>::unrolled_to_component_indices(j)];
-
+              }
               }
           }
       }
