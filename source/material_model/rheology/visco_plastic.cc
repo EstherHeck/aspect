@@ -325,6 +325,8 @@ namespace aspect
             // As current stress is only used to compare to yield stress but does not affect material properties,
             // it is used here to modify current_edot_ii
             double radiation_damping_term = 0.0;
+            std::cout << " current edot_ii before RDT is : " << current_edot_ii << std::endl;
+            std::cout << " current stress  before RDT is : " << current_stress << std::endl;
             if (friction_options.get_use_radiation_damping())
               {
                 if (use_elasticity == false)
@@ -348,6 +350,10 @@ namespace aspect
                     current_edot_ii = current_stress / viscosity_pre_yield;
                   }
               }
+            std::cout << " raditaion damping term    is  : " << radiation_damping_term << std::endl;
+            std::cout << " current edot_ii after RDT is  : " << current_edot_ii << std::endl;
+            std::cout << " current stress  after  RDT is : " << current_stress << std::endl;
+            std::cout << " viscosity_pre_yield is        : " << viscosity_pre_yield << std::endl;
 
             // Steb 3c: calculate friction angle dependent on rate and/or state if specified
             output_parameters.current_friction_angles[j] = friction_options.compute_dependent_friction_angle(current_edot_ii,

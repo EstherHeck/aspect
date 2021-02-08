@@ -247,6 +247,7 @@ namespace aspect
 
                 // Average viscoelastic viscosity
                 const double average_viscoelastic_viscosity = out.viscosities[i];
+                std::cout << "out.viscosites[i] in elasticity for " << i << " : " <<  out.viscosities[i] << std::endl;
 
                 // Fill elastic force outputs (See equation 30 in Moresi et al., 2003, J. Comp. Phys.)
                 force_out->elastic_force[i] = -1. * ( ( average_viscoelastic_viscosity / ( average_elastic_shear_moduli[i] * dte  ) ) * stress_old );
