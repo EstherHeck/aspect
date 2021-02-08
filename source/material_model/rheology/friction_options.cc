@@ -315,7 +315,7 @@ namespace aspect
 
             std::cout << "Reaction terms - Theta_increment : " << theta_increment << std::endl;
             std::cout << "Reaction terms - Theta_current : " << current_theta << std::endl;
-            std::cout << "Reaction terms - Theta_old : " << old_theta << std::endl;
+            std::cout << "Reaction terms - Theta_old : " << theta_old << std::endl;
 
             out.reaction_terms[q][theta_position_tmp] = theta_increment;
           }
