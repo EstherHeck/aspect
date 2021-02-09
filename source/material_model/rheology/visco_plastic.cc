@@ -167,7 +167,6 @@ namespace aspect
         output_parameters.composition_viscosities.resize(volume_fractions.size(), numbers::signaling_nan<double>());
         output_parameters.current_friction_angles.resize(volume_fractions.size(), numbers::signaling_nan<double>());
 
-// is this needed?
         const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
 
         // Assemble stress tensor if elastic behavior is enabled
@@ -286,8 +285,6 @@ namespace aspect
 
             if (use_elasticity)
               {
-                const std::vector<double> &elastic_shear_moduli = elastic_rheology.get_elastic_shear_moduli();
-
                 if (use_reference_strainrate == true)
                   current_edot_ii = ref_strain_rate;
                 else
@@ -345,7 +342,7 @@ namespace aspect
                     radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                              / (2 * sqrt(elastic_shear_moduli[j] / reference_density));
                     current_stress = current_stress - radiation_damping_term;
-                    current_edot_ii = std::max(current_stress / viscosity_pre_yield, min_strain_rate);
+                    current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
                   }
               }
 
