@@ -345,7 +345,7 @@ namespace aspect
                     radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                              / (2 * sqrt(elastic_shear_moduli[j] / reference_density));
                     current_stress = current_stress - radiation_damping_term;
-                    current_edot_ii = current_stress / viscosity_pre_yield;
+                    current_edot_ii = std::max(current_stress / viscosity_pre_yield, min_strain_rate);
                   }
               }
 
