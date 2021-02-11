@@ -274,7 +274,8 @@ namespace aspect
           enum YieldScheme
           {
             stress_limiter,
-            drucker_prager
+            drucker_prager,
+            rate_and_state_benchmark
           } yield_mechanism;
 
           /**
