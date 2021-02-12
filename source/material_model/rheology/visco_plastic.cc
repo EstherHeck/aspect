@@ -323,6 +323,29 @@ namespace aspect
             viscosity_pre_yield *= weakening_factors[2];
             current_stress *= weakening_factors[2];
 
+            // Steb 3c: calculate friction angle dependent on rate and/or state if specified
+            output_parameters.current_friction_angles[j] = friction_options.compute_dependent_friction_angle(current_edot_ii,
+                                                           j, in.composition[i], current_cell,
+                                                           output_parameters.current_friction_angles[j],
+                                                           in.position[i]);
+
+
+            // Step 4: plastic yielding
+
+            // Determine if the pressure used in Drucker Prager plasticity will be capped at 0 (default).
+            // This may be necessary in models without gravity and the dynamic stresses are much higher
+            // than the lithostatic pressure.
+
+            double pressure_for_plasticity = in.pressure[i];
+            if (allow_negative_pressures_in_plasticity == false)
+              pressure_for_plasticity = std::max(in.pressure[i],0.0);
+
+            // Step 4a: calculate Drucker-Prager yield stress
+            const double yield_stress = drucker_prager_plasticity.compute_yield_stress(current_cohesion,
+                                                                                       output_parameters.current_friction_angles[j],
+                                                                                       pressure_for_plasticity,
+                                                                                       drucker_prager_parameters.max_yield_stress);
+
             // compute radiation damping if it is used
             // radiation damping is normally substracted from the shear stress. Here we use current stress instead.
             // As current stress is only used to compare to yield stress but does not affect material properties,
@@ -347,34 +370,11 @@ namespace aspect
                     //std::cout << " current edot_ii is " << current_edot_ii << std::endl;
                     radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                              / (2 * sqrt(elastic_shear_moduli[j] / reference_density));
-                    current_stress = current_stress - radiation_damping_term;
-                    current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
+                    //current_stress = current_stress - radiation_damping_term;
+                    //current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
                   }
               }
             output_parameters.current_edot_ii[j] = current_edot_ii;
-
-            // Steb 3c: calculate friction angle dependent on rate and/or state if specified
-            output_parameters.current_friction_angles[j] = friction_options.compute_dependent_friction_angle(current_edot_ii,
-                                                           j, in.composition[i], current_cell,
-                                                           output_parameters.current_friction_angles[j],
-                                                           in.position[i]);
-
-
-            // Step 4: plastic yielding
-
-            // Determine if the pressure used in Drucker Prager plasticity will be capped at 0 (default).
-            // This may be necessary in models without gravity and the dynamic stresses are much higher
-            // than the lithostatic pressure.
-
-            double pressure_for_plasticity = in.pressure[i];
-            if (allow_negative_pressures_in_plasticity == false)
-              pressure_for_plasticity = std::max(in.pressure[i],0.0);
-
-            // Step 4a: calculate Drucker-Prager yield stress
-            const double yield_stress = drucker_prager_plasticity.compute_yield_stress(current_cohesion,
-                                                                                       output_parameters.current_friction_angles[j],
-                                                                                       pressure_for_plasticity,
-                                                                                       drucker_prager_parameters.max_yield_stress);
 
             // Step 4b: select if yield viscosity is based on Drucker Prager or stress limiter rheology
             double viscosity_yield = viscosity_pre_yield;
@@ -419,8 +419,8 @@ namespace aspect
                       // In \\cite{pipping_variational_2015} it is stated that this is the
                       // equation for Tresca friction
                       double fault_strength = friction_options.effective_normal_stress_on_fault
-                                              * output_parameters.current_friction_angles[j] * current_edot_ii
-                                              * current_cell->extent_in_direction(0);
+                                              * tan(output_parameters.current_friction_angles[j]) * current_edot_ii
+                                              * current_cell->extent_in_direction(0)-radiation_damping_term;
 
                       // these two lines are from drucker_prager_plasticity.compute_viscosity()
                       const double strain_rate_effective_inv = 1./(2.*current_edot_ii);
