@@ -374,7 +374,6 @@ namespace aspect
                     //current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
                   }
               }
-            output_parameters.current_edot_ii[j] = current_edot_ii;
 
             // Step 4b: select if yield viscosity is based on Drucker Prager or stress limiter rheology
             double viscosity_yield = viscosity_pre_yield;
@@ -422,6 +421,7 @@ namespace aspect
                                               * tan(output_parameters.current_friction_angles[j]) * current_edot_ii
                                               * current_cell->extent_in_direction(0)-radiation_damping_term;
 
+                      current_edot_ii = fault_strength / (2 * viscosity_pre_yield);
                       // these two lines are from drucker_prager_plasticity.compute_viscosity()
                       const double strain_rate_effective_inv = 1./(2.*current_edot_ii);
                       viscosity_yield = fault_strength * strain_rate_effective_inv;
@@ -435,6 +435,7 @@ namespace aspect
                   break;
                 }
               }
+            output_parameters.current_edot_ii[j] = current_edot_ii;
 
             // Step 5: limit the viscosity with specified minimum and maximum bounds
             output_parameters.composition_viscosities[j] = std::min(std::max(viscosity_yield, min_visc), max_visc);
