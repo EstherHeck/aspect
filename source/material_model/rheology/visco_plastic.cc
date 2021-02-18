@@ -212,6 +212,7 @@ namespace aspect
                                    "yielding is always assumed due to the rate and state framework."));
             fault_material_index = this->introspection().compositional_index_for_name("fault");
           }
+        std::cout << std::endl << "fault material index is: " << fault_material_index << std::endl ;
 
         // Calculate viscosities for each of the individual compositional phases
         for (unsigned int j=0; j < volume_fractions.size(); ++j)
@@ -395,9 +396,13 @@ namespace aspect
                   // rescale the viscosity back to yield surface
                   // if this is the fault material and rate-and-state friction is used,
                   // assume that we are always yielding
+                  std::cout << "j is: " << j << "while fault_material_index: " << fault_material_index << std::endl;
+                  std::cout << "current_stress - yield_stress is: " << current_stress - yield_stress  << " in composition " << j<< std::endl<< std::endl;
+
                   if ((current_stress >= yield_stress) |
                       ((friction_options.get_use_theta()) && (j== fault_material_index)))
                     {
+                      std::cout << "so we entered the yielding loop!" << std::endl << std::endl;
                       viscosity_yield = drucker_prager_plasticity.compute_viscosity(current_cohesion,
                                                                                     output_parameters.current_friction_angles[j],
                                                                                     pressure_for_plasticity,
