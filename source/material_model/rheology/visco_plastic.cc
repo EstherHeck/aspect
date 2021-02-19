@@ -197,23 +197,6 @@ namespace aspect
           edot_ii = std::max(std::sqrt(std::fabs(second_invariant(deviator(in.strain_rate[i])))),
                              min_strain_rate);
 
-        // if rate and state friction is used, this index is needed, as it will be used to always assume yielding
-        // conditions inside the fault. default is so high it should never unintentionally be reached.
-        unsigned int fault_material_index = 1000;
-        if (friction_options.get_use_theta())
-          {
-            // TODO: make this a bit more flexible name-wise, like let the user define which materials should be
-            // considered. Or which strategy. Could also be all, or take a and b as a proxy.
-            // TODO: should be done if this is > 70 or so %. Can be circumvented right now by using max
-            // composition for viscosity averaging
-            AssertThrow(this->introspection().compositional_name_exists("fault"),
-                        ExcMessage("Material model with rate-and-state friction only works "
-                                   "if there is a compositional field that is called fault. For this composition "
-                                   "yielding is always assumed due to the rate and state framework."));
-            fault_material_index = this->introspection().compositional_index_for_name("fault");
-          }
-        std::cout << std::endl << "fault material index is: " << fault_material_index << std::endl ;
-
         // Calculate viscosities for each of the individual compositional phases
         for (unsigned int j=0; j < volume_fractions.size(); ++j)
           {
@@ -394,13 +377,13 @@ namespace aspect
                 {
                   // Step 4b-2: if the current stress is greater than the yield stress,
                   // rescale the viscosity back to yield surface
-                  // if this is the fault material and rate-and-state friction is used,
+                  // If this is the fault material and rate-and-state friction is used,
                   // assume that we are always yielding
-                  std::cout << "j is: " << j << "while fault_material_index: " << fault_material_index << std::endl;
+                  std::cout << "j is: " << j << ", while fault_material_index +1 : " << friction_options.fault_composition_index +1 << std::endl;
                   std::cout << "current_stress - yield_stress is: " << current_stress - yield_stress  << " in composition " << j<< std::endl<< std::endl;
 
                   if ((current_stress >= yield_stress) |
-                      ((friction_options.get_use_theta()) && (j== fault_material_index)))
+                      ((friction_options.get_use_theta()) && (j== friction_options.fault_composition_index + 1)))
                     {
                       std::cout << "so we entered the yielding loop!" << std::endl << std::endl;
                       viscosity_yield = drucker_prager_plasticity.compute_viscosity(current_cohesion,
@@ -416,7 +399,7 @@ namespace aspect
                 case tresca:
                 {
                   if ((current_stress >= yield_stress) |
-                      ((friction_options.get_use_theta()) && (j== fault_material_index)))
+                      ((friction_options.get_use_theta()) && (j== friction_options.fault_composition_index + 1)))
                     {
                       // This is according to \\cite{erickson_community_2020}, a benchmark paper for
                       // rate-and-state friction models. They state state that
