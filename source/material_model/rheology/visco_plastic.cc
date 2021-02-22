@@ -379,13 +379,14 @@ namespace aspect
                   // rescale the viscosity back to yield surface
                   // If this is the fault material and rate-and-state friction is used,
                   // assume that we are always yielding
-                  std::cout << "j is: " << j << ", while fault_material_index +1 : " << friction_options.fault_composition_index +1 << std::endl;
-                  std::cout << "current_stress - yield_stress is: " << current_stress - yield_stress  << " in composition " << j<< std::endl<< std::endl;
+                  //std::cout << "j is: " << j << ", while fault_material_index +1 : " << friction_options.fault_composition_index +1 << std::endl;
+                  //std::cout << "current_stress - yield_stress is: " << current_stress - yield_stress  << " in composition " << j<< std::endl << std::endl;
+                  //                   AssertThrow(volume_fractions.size() == in.composition[0].size()+1, ExcMessage("there is a field too much...."));
 
                   if ((current_stress >= yield_stress) |
                       ((friction_options.get_use_theta()) && (j== friction_options.fault_composition_index + 1)))
                     {
-                      std::cout << "so we entered the yielding loop!" << std::endl << std::endl;
+                      // std::cout << "so we entered the yielding loop!" << std::endl << std::endl;
                       viscosity_yield = drucker_prager_plasticity.compute_viscosity(current_cohesion,
                                                                                     output_parameters.current_friction_angles[j],
                                                                                     pressure_for_plasticity,
@@ -567,7 +568,7 @@ namespace aspect
         // If friction is defined state dependent, the material field for the state variable theta
         // must be excluded during volume fraction computation.
         if (friction_options.get_use_theta())
-          composition_mask = friction_options.get_theta_composition_mask(composition_mask);
+          composition_mask.set(friction_options.theta_composition_index,false);
 
         return composition_mask;
       }
