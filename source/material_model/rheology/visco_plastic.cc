@@ -331,8 +331,11 @@ namespace aspect
                     //std::cout << " current edot_ii is " << current_edot_ii << std::endl;
                     radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                              / (2 * sqrt(elastic_shear_moduli[j] / reference_density));
-                    current_stress = current_stress - radiation_damping_term;
-                    current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
+                    if (yield_mechanism != tresca)
+                      {
+                        current_stress = current_stress - radiation_damping_term;
+                        current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
+                      }
                   }
               }
             output_parameters.current_edot_ii[j] = current_edot_ii;
@@ -409,8 +412,9 @@ namespace aspect
                       // equation for Tresca friction
                       double fault_strength = friction_options.effective_normal_stress_on_fault
                                               * tan(output_parameters.current_friction_angles[j]) * current_edot_ii
-                                              * current_cell->extent_in_direction(0);
+                                              * current_cell->extent_in_direction(0)-radiation_damping_term;
 
+                      current_edot_ii = fault_strength / (2 * viscosity_pre_yield);
                       // these two lines are from drucker_prager_plasticity.compute_viscosity()
                       const double strain_rate_effective_inv = 1./(2.*current_edot_ii);
                       viscosity_yield = fault_strength * strain_rate_effective_inv;
