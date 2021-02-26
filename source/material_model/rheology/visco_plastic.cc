@@ -330,7 +330,7 @@ namespace aspect
                     const double cellsize = current_cell->extent_in_direction(0);
                     //std::cout << " current edot_ii is " << current_edot_ii << std::endl;
                     radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
-                                             / (2 * sqrt(elastic_shear_moduli[j] / reference_density));
+                                             / (2 * std::sqrt(elastic_shear_moduli[j] / reference_density));
                     if (yield_mechanism != tresca)
                       {
                         current_stress = current_stress - radiation_damping_term;
@@ -386,7 +386,7 @@ namespace aspect
                   //std::cout << "current_stress - yield_stress is: " << current_stress - yield_stress  << " in composition " << j<< std::endl << std::endl;
                   //                   AssertThrow(volume_fractions.size() == in.composition[0].size()+1, ExcMessage("there is a field too much...."));
 
-                  if ((current_stress >= yield_stress) |
+                  if ((current_stress >= yield_stress) ||
                       ((friction_options.use_theta()) && (j== friction_options.fault_composition_index + 1)))
                     {
                       // std::cout << "so we entered the yielding loop!" << std::endl << std::endl;
@@ -402,18 +402,17 @@ namespace aspect
                 }
                 case tresca:
                 {
-                  if ((current_stress >= yield_stress) |
+                  // This is according to \\cite{erickson_community_2020}, a benchmark paper for
+                  // rate-and-state friction models. They state state that
+                  // the fault strength is equal to the shear stress on the fault.
+                  // In \\cite{pipping_variational_2015} it is stated that this is the
+                  // equation for Tresca friction
+                  double fault_strength = friction_options.effective_normal_stress_on_fault
+                                          * std::tan(output_parameters.current_friction_angles[j]) * current_edot_ii
+                                          * current_cell->extent_in_direction(0) - radiation_damping_term;
+                  if ((current_stress >= fault_strength) ||
                       ((friction_options.use_theta()) && (j== friction_options.fault_composition_index + 1)))
                     {
-                      // This is according to \\cite{erickson_community_2020}, a benchmark paper for
-                      // rate-and-state friction models. They state state that
-                      // the fault strength is equal to the shear stress on the fault.
-                      // In \\cite{pipping_variational_2015} it is stated that this is the
-                      // equation for Tresca friction
-                      double fault_strength = friction_options.effective_normal_stress_on_fault
-                                              * tan(output_parameters.current_friction_angles[j]) * current_edot_ii
-                                              * current_cell->extent_in_direction(0)-radiation_damping_term;
-
                       current_edot_ii = fault_strength / (2 * viscosity_pre_yield);
                       // these two lines are from drucker_prager_plasticity.compute_viscosity()
                       const double strain_rate_effective_inv = 1./(2.*current_edot_ii);
