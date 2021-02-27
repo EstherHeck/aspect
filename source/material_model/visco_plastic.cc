@@ -214,6 +214,10 @@ namespace aspect
 
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding
           bool plastic_yielding = false;
+
+          // initialize vector to be filled with values of current_edot_ii which is needed for friction additional output
+          std::vector<double> current_edot_ii_for_friction_output(volume_fractions.size(),0.);
+
           if (in.requests_property(MaterialProperties::viscosity))
             {
               // Currently, the viscosities for each of the compositional fields are calculated assuming
@@ -240,6 +244,9 @@ namespace aspect
               if (MaterialModel::MaterialModelDerivatives<dim> *derivatives =
                     out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim> >())
                 rheology->compute_viscosity_derivatives(i, volume_fractions, isostrain_viscosities.composition_viscosities, in, out, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
+
+              // Fill vector with values of current_edot_ii which is needed for friction additional output
+              current_edot_ii_for_friction_output = isostrain_viscosities.current_edot_ii;
             }
 
           // Now compute changes in the compositional fields (i.e. the accumulated strain).
@@ -275,6 +282,10 @@ namespace aspect
                                                                           use_reference_strainrate, average_elastic_shear_moduli[i], dte, out);
                 }
             }
+
+          // if rate and state friction is used, fill the additional output fields
+          if (rheology->friction_options.use_theta())
+            rheology->friction_options.fill_friction_outputs(i,volume_fractions,in,out,current_edot_ii_for_friction_output);
         }
 
       // If we use the full strain tensor, compute the change in the individual tensor components.
@@ -424,6 +435,9 @@ namespace aspect
 
       if (rheology->use_elasticity)
         rheology->elastic_rheology.create_elastic_outputs(out);
+
+      if (rheology->friction_options.use_theta())
+        rheology->friction_options.create_friction_outputs(out);
     }
 
   }
