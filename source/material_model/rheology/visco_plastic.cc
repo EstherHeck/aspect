@@ -264,7 +264,8 @@ namespace aspect
                 radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                          / (2.0 * std::sqrt(elastic_shear_moduli[j] / reference_density));
                 current_stress -= radiation_damping_term;
-                current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
+                if (friction_options.cut_edot_ii)
+                  current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
 
                 // Note: I applied radiation damping to current_stress because current_stress can be used
                 // to modify te effective viscosity and current_edot_ii, which in turn modifies the friction
