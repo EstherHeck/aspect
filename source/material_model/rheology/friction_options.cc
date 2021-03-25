@@ -200,7 +200,7 @@ namespace aspect
                       else
                         mu = std::tan(current_friction) + rate_and_state_parameter_b
                              * std::log((theta * quasi_static_strain_rate  * cellsize) / critical_slip_distance);
-                      }
+                    }
                   else
                     {
                       // Calculate effective friction according to Equation (4) in Sobolev and Muldashev (2017):
@@ -233,7 +233,7 @@ namespace aspect
                                 "Your friction coefficient becomes nan or inf. Please check all your friction parameters. In case of "
                                 "rate-and-state like friction, don't forget to check on a,b, and the critical slip distance, or theta."));
 
-                  /*// chasing the origin of negative friction angles
+                  // chasing the origin of negative friction angles
                   if (theta <= 0)
                     {
                       std::cout << "Theta is zero/negative: " << theta << " at time " << this->get_time() << std::endl;
@@ -242,9 +242,14 @@ namespace aspect
                       std::cout << "current edot ii is " << current_edot_ii<< std::endl;
                       std::cout << "the friction coeff at this time is: " << tan(current_friction) << " and the friction angle in RAD is " << current_friction << std::endl;
                       std::cout << "the friction angle in degree is: " << current_friction*180/3.1516 << std::endl;
-                      //AssertThrow(false, ExcMessage("Theta negative."));
+                     // Utilities::NaturalCoordinate<dim> coords =
+                       // this->get_geometry_model().cartesian_to_other_coordinates(position, coordinate_system_RSF);
+                      const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_other_coordinates(position, coordinate_system_RSF).get_coordinates();
+                      for (unsigned int soda = 0; soda < coords.size(); ++soda)
+                        std::cout << "coords in dir " << soda << " : " << coords[soda] << std::endl ;
+                      AssertThrow(false, ExcMessage("Theta negative."));
                     }
-                  if (current_friction <= 0)
+                  /*if (current_friction <= 0)
                     {
                       std::cout << "current_friction is zero/negative!"<<std::endl;
                       std::cout << "Theta is " << theta << " at time " << this->get_time() << std::endl;
@@ -882,4 +887,3 @@ namespace aspect
 #undef INSTANTIATE
   }
 }
-
