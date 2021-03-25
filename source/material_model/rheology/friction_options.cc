@@ -139,8 +139,8 @@ namespace aspect
 
                   const double mu = effective_friction_factor[j] * (std::tan(current_friction)
                                                                     + (rate_and_state_parameter_a - rate_and_state_parameter_b)
-                                                                    * std::log(1.75e-2 / (quasi_static_strain_rate * cellsize)));
-                  // ToDo: instead of hardcoding 1.75e-2, make this an input parameter!
+                                                                    * std::log(steady_state_velocity
+                                                                               / (quasi_static_strain_rate * cellsize)));
                   current_friction = std::atan (mu);
                 }
               break;
@@ -328,13 +328,23 @@ namespace aspect
             const double theta_old = std::max(1e-50,in.composition[q][theta_composition_index]);
             double current_theta = 0;
             double critical_slip_distance = 0.0;
-            for (unsigned int j=0; j < volume_fractions.size(); ++j)
+
+            if (friction_dependence_mechanism == steady_state_rate_and_state_dependent_friction)
               {
-                critical_slip_distance += volume_fractions[j] * get_critical_slip_distance(in.position[q], j);
-                // theta is also computed within the loop to keep it as similar as possible to the theta used
-                // within compute_dependent_friction which is also called from within a loop over volume_fractions.size()
-                current_theta += volume_fractions[j] * compute_theta(theta_old, current_edot_ii,
-                                                                     in.current_cell->extent_in_direction(0), critical_slip_distance);
+                for (unsigned int j=0; j < volume_fractions.size(); ++j)
+                  critical_slip_distance += volume_fractions[j] * get_critical_slip_distance(in.position[q], j);
+                current_theta += critical_slip_distance / steady_state_velocity;
+              }
+            else
+              {
+                for (unsigned int j=0; j < volume_fractions.size(); ++j)
+                  {
+                    critical_slip_distance += volume_fractions[j] * get_critical_slip_distance(in.position[q], j);
+                    // theta is also computed within the loop to keep it as similar as possible to the theta used
+                    // within compute_dependent_friction which is also called from within a loop over volume_fractions.size()
+                    current_theta += volume_fractions[j] * compute_theta(theta_old, current_edot_ii,
+                                                                         in.current_cell->extent_in_direction(0), critical_slip_distance);
+                  }
               }
 
             // reintroduction of theta_increment to see if limiting it, can save me from negative theta values
@@ -401,7 +411,13 @@ namespace aspect
         bool use_theta = false;
         const FrictionDependenceMechanism mechanism = get_friction_dependence_mechanism();
         // steady_state_rate_and_state_dependent_friction does not actually use theta, but
-        // it also comes from the RSF framework. So I am not sure if it needs to be put in here....
+        // it also comes from the RSF framework and can potentially be used to compute a
+        // longterm model that will then be restarted with real RSF. Real RSF needs the
+        // compositional field theta, so theta needs to be in the longterm model too. However,
+        // if steady-state RSF is not listed here to use theta, theta will not be excluded
+        // from volume_fractions, except for it being zero. However, for real RSF theta is
+        // not allowed to be 0. So probably it is easiest if steady-state RSF also sets the
+        // use_theta flag to true.
         if ((mechanism == rate_and_state_dependent_friction)
             || (mechanism == rate_and_state_dependent_friction_plus_linear_slip_weakening)
             || (mechanism == regularized_rate_and_state_dependent_friction)
@@ -501,9 +517,17 @@ namespace aspect
                            "\n\n"
                            "\\item ``steady state rate and state dependent friction'': friction "
                            "is computed as the steady-state friction coefficient in rate-and-state friction: "
-                           "$\\mu_{ss} =\\mu_{st}}+(a-b)ln(V/V_{st}})$"
-                           "This friction is reached when state evolves toward a steady state $\\theta_{ss} = L/V$"
-                           "at constant slip velocities.");
+                           "$\\mu_{ss} =\\mu_{st}}+(a-b)ln(V_{ss}/V_{st}})$"
+                           "This friction is reached when state evolves toward a steady state $\\theta_{ss} = L/V_{ss}$"
+                           "at constant slip velocities. The velocity $V_{ss}$ can be specified with the parameter "
+                           "'steady state velocity for RSF'. Note that not the actual velocities in the model are taken "
+                           "to determine the friction angle, but a constant $V_{ss}$. If actual model velocities would "
+                           "be used for $V_{ss}$, this would be another rate-dependent friction formulation. This friction "
+                           "formulation is thought to be useful for models where the friction angle should dependent on a and b, "
+                           "but not on rate nor state, e.g. in a model run with long timesteps to acquire the initial conditions "
+                           "for a rate-and-state model. Even though a state variable theta is not used to compute the friction "
+                           "angle, a compositional field 'theta' must be provided to ensure a smooth restart with one of the "
+                           "rate-and-state friction formulations. Theta is computed to equal $\\theta_{ss}$.");
 
         // Dynamic friction paramters
         prm.declare_entry ("Dynamic characteristic strain rate", "1e-12",
@@ -594,6 +618,18 @@ namespace aspect
                            "$\\mu = \\mu_{st} = \\mu_0 + (a-b)ln\\big( \\frac{V}{V_0} \\big). "
                            "It should not be confused with the characteristic strain rate in dynamic friction. "
                            "Units: \\si{\\per\\second}.");
+
+        prm.declare_entry ("Steady state velocity for RSF", "1.75e-2",
+                           Patterns::Double (0),
+                           "This is velocity $V_{st}$ used in 'steady state rate and state dependent friction'. "
+                           "In the rate-and-state friction framework, when the velocity remains constant "
+                           "friction will cease to change and evolve to a steady-state that depends on a and b. "
+                           "This is the input parameter to choose the desired velocity, that does not actually "
+                           "is the velocity in the model but is used to determine the friction angle based on the "
+                           "equation in 'steady state rate and state dependent friction'. So this velocity is "
+                           "assumed to have remained constant over a long period such that the friction angle "
+                           "evolved to a steady-state."
+                           "Units: \\si{\\meter\\per\\second}.");
 
         prm.declare_entry ("Use radiation damping", "false",
                            Patterns::Bool (),
@@ -740,6 +776,8 @@ namespace aspect
         prm.leave_subsection();
 
         quasi_static_strain_rate = prm.get_double("Quasi static strain rate");
+
+        steady_state_velocity = prm.get_double("Steady state velocity for RSF");
 
         effective_normal_stress_on_fault = prm.get_double("Effective normal stress on fault");
 

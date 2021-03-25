@@ -318,6 +318,13 @@ namespace aspect
           double quasi_static_strain_rate;
 
           /**
+           * The velocity used in 'steady state rate and state dependent friction' that is
+           * assumed to have remained constant over a long period such that the friction angle
+           * evolved to a steady-state.
+           */
+          double steady_state_velocity;
+
+          /**
            * Parsed functions that specify the rate-and-state parameters a and b which must be
            * given in the input file using the function method.
            */
