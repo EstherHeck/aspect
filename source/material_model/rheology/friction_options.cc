@@ -235,7 +235,10 @@ namespace aspect
 
                   // chasing the origin of negative friction angles and negative theta
                   const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_other_coordinates(position, coordinate_system_RSF).get_coordinates();
-                  if ( (coords[0] == 187.5) && (coords[1] == 42.2631) && (coords[2] == 332.737))
+                  const int delta_coord = 5;
+                  if ( (coords[0] < 187.5 + delta_coord) && (coords[0] > 187.5 - delta_coord)
+                       && (coords[1] < 42.2631 + delta_coord) && (coords[1] > 42.2631 - delta_coord)
+                       && (coords[2] < 332.737 + delta_coord) && (coords[2] > 332.737 - delta_coord))
                     {
                       std::cout << "coords in" ;
                       for (unsigned int soda = 0; soda < coords.size(); ++soda)
