@@ -629,6 +629,12 @@ namespace aspect
         }
         prm.leave_subsection();
 
+        prm.enter_subsection("Effective friction factor function");
+        {
+          Functions::ParsedFunction<dim>::declare_parameters(prm,1);
+        }
+        prm.leave_subsection();
+
         prm.declare_entry ("Quasi static strain rate", "1e-14",
                            Patterns::Double (0),
                            "The quasi static or reference strain rate used in rate and state friction. It is an "
