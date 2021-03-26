@@ -780,7 +780,7 @@ namespace aspect
                                                                             "Effective friction factor");
 */
 
-        prm.enter_subsection("Effective friction factor");
+        prm.enter_subsection("Effective friction factor function");
         try
           {
             effective_friction_factor_function
