@@ -305,7 +305,7 @@ namespace aspect
         // values physically do not make sense but can occur as theta is advected
         // as a material field. A zero or negative value for theta also leads to nan
         // values for friction.
-        current_theta = std::max(current_theta, 1e-50);
+        //current_theta = std::max(current_theta, 1e-50);
         return current_theta;
       }
 
