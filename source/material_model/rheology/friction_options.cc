@@ -239,8 +239,8 @@ namespace aspect
                                 "rate-and-state like friction, don't forget to check on a,b, and the critical slip distance, or theta."
                                 "a is: "+  Utilities::to_string(rate_and_state_parameter_a) + ", b is: "
                                 + Utilities::to_string(rate_and_state_parameter_b)+ ", L is: " +  Utilities::to_string(critical_slip_distance) +
-                                ", theta is: "+ Utilities::to_string(theta)+", friction is: " 
-                                + Utilities::to_string(current_friction)+", current edot_ii is: "
+                                ", theta is: "+ Utilities::to_string(theta)+" friction coeff is: "+Utilities::to_string(mu)+
+                                ", friction angle [RAD] is: "+ Utilities::to_string(current_friction)+", current edot_ii is: "
                                 + Utilities::to_string(current_edot_ii)+ "the position is: dir 0 = "+ Utilities::to_string(coords[0])+
                                 " dir 1 = "+ Utilities::to_string(coords[1])+ "dir 2="+ Utilities::to_string(coords[2])));
 
