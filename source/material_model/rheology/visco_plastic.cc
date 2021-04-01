@@ -275,13 +275,6 @@ namespace aspect
               }
             output_parameters.current_edot_ii[j] = current_edot_ii;
 
-            // Steb 3c: calculate friction angle dependent on rate and/or state if specified
-            output_parameters.current_friction_angles[j] = friction_options.compute_dependent_friction_angle(current_edot_ii,
-                                                           j, in.composition[i], current_cell,
-                                                           output_parameters.current_friction_angles[j],
-                                                           in.position[i]);
-
-
             // Step 4: plastic yielding
 
             // Determine if the pressure used in Drucker Prager plasticity will be capped at 0 (default).
@@ -291,6 +284,19 @@ namespace aspect
             double pressure_for_plasticity = in.pressure[i];
             if (allow_negative_pressures_in_plasticity == false)
               pressure_for_plasticity = std::max(in.pressure[i],0.0);
+
+            // Steb 3c: calculate friction angle dependent on rate and/or state if specified
+            output_parameters.current_friction_angles[j] = friction_options.compute_dependent_friction_angle(current_edot_ii,
+                                                           j, in.composition[i], current_cell,
+                                                           output_parameters.current_friction_angles[j],
+                                                           in.position[i],current_cohesion,
+                                                           pressure_for_plasticity,
+                                                           drucker_prager_parameters.max_yield_stress,
+                                                           current_stress,
+                                                           min_strain_rate);
+
+
+
 
             // Step 4a: calculate Drucker-Prager yield stress
             const double yield_stress = drucker_prager_plasticity.compute_yield_stress(current_cohesion,
