@@ -166,7 +166,7 @@ namespace aspect
                   const double effective_friction_factor = get_effective_friction_factor(position,j);
 
                   // theta_old is taken from the current compositional field theta
-                  const double theta_old = composition[theta_composition_index];
+                  double theta_old = composition[theta_composition_index];
                   theta_old = std::max(theta_old,1e-50);
                   // Calculate the state variable theta according to Equation (7) from Sobolev and Muldashev (2017)
                   const double theta = compute_theta(theta_old, current_edot_ii, cellsize, critical_slip_distance);
@@ -255,7 +255,7 @@ namespace aspect
                       std::cout << "the friction coeff at this time is: " << tan(current_friction) << " and the friction angle in RAD is " << current_friction << std::endl;
                       std::cout << "the friction angle in degree is: " << current_friction*180/3.1516 << std::endl;
                       //AssertThrow(false, ExcMessage("Theta negative."));
-                    }
+                    }/*
                   if (current_friction <= 0)
                     {
                       std::cout << "current_friction is zero/negative!"<<std::endl;
@@ -305,6 +305,8 @@ namespace aspect
         // values physically do not make sense but can occur as theta is advected
         // as a material field. A zero or negative value for theta also leads to nan
         // values for friction.
+        if (current_theta < 0)
+           std::cout << "got theta negative" << std::endl;
         current_theta = std::max(current_theta, 1e-50);
         return current_theta;
       }
@@ -359,6 +361,9 @@ namespace aspect
                                                                          in.current_cell->extent_in_direction(0), critical_slip_distance);
                   }
               }
+
+        if (current_theta == 1e-50)
+           std::cout << "got a cut theta in theta reaction terms" << std::endl;
 
             // reintroduction of theta_increment to see if limiting it, can save me from negative theta values
             double theta_increment = current_theta - theta_old;
