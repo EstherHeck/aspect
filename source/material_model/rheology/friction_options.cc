@@ -167,6 +167,8 @@ namespace aspect
 
                   // theta_old is taken from the current compositional field theta
                   double theta_old = composition[theta_composition_index];
+            if(theta_old < 0)
+               std::cout << "got a negative old theta before computing friction" << std::endl;
                   theta_old = std::max(theta_old,1e-50);
                   // Calculate the state variable theta according to Equation (7) from Sobolev and Muldashev (2017)
                   const double theta = compute_theta(theta_old, current_edot_ii, cellsize, critical_slip_distance);
@@ -341,6 +343,8 @@ namespace aspect
             // this is a trial to check if it prevents current_theta from being negative if old_theta is limited to >=0
             double theta_old = in.composition[q][theta_composition_index];
             theta_old = std::max(theta_old,1e-50);
+            if(theta_old < 0)
+               std::cout << "got a negative old theta in theta reaction terms" << std::endl;
             double current_theta = 0;
             double critical_slip_distance = 0.0;
 
