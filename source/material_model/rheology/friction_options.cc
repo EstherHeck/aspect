@@ -167,6 +167,7 @@ namespace aspect
 
                   // theta_old is taken from the current compositional field theta
                   const double theta_old = composition[theta_composition_index];
+                  theta_old = std::max(theta_old,1e-50);
                   // Calculate the state variable theta according to Equation (7) from Sobolev and Muldashev (2017)
                   const double theta = compute_theta(theta_old, current_edot_ii, cellsize, critical_slip_distance);
 
@@ -244,7 +245,7 @@ namespace aspect
                                 + Utilities::to_string(current_edot_ii)+ "the position is: dir 0 = "+ Utilities::to_string(coords[0])+
                                 " dir 1 = "+ Utilities::to_string(coords[1])+ "dir 2="+ Utilities::to_string(coords[2])));
 
-                  /*// chasing the origin of negative friction angles
+                  // chasing the origin of negative friction angles
                   if (theta <= 0)
                     {
                       std::cout << "Theta is zero/negative: " << theta << " at time " << this->get_time() << std::endl;
@@ -290,7 +291,7 @@ namespace aspect
                     const double critical_slip_distance) const
       {
         // this is a trial to check if it prevents current_theta from being negative if old_theta is limited to >=0
-        //theta_old = std::max(theta_old,1e-50);
+        theta_old = std::max(theta_old,1e-50);
         // Equation (7) from Sobolev and Muldashev (2017):
         // theta_{n+1} = L/V_{n+1} + (theta_n - L/V_{n+1})*exp(-(V_{n+1}dt)/L)
         // This is obtained from Equation (5): dtheta/dt = 1 - (theta V)/L
@@ -336,7 +337,8 @@ namespace aspect
                                                           use_reference_strainrate, dte);
 
             // this is a trial to check if it prevents current_theta from being negative if old_theta is limited to >=0
-            const double theta_old = in.composition[q][theta_composition_index];
+            double theta_old = in.composition[q][theta_composition_index];
+            theta_old = std::max(theta_old,1e-50);
             double current_theta = 0;
             double critical_slip_distance = 0.0;
 
@@ -360,8 +362,8 @@ namespace aspect
 
             // reintroduction of theta_increment to see if limiting it, can save me from negative theta values
             double theta_increment = current_theta - theta_old;
-            if (theta_old + theta_increment < 0)
-              theta_increment = 0;
+            if (theta_old + theta_increment < 1e-50)
+              theta_increment = 1e-50 - theta_old;
 
             out.reaction_terms[q][theta_composition_index] = theta_increment;
           }
