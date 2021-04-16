@@ -248,7 +248,7 @@ namespace aspect
             // As current stress is only used to compare to yield stress but does not affect material properties,
             // it is used here to modify current_edot_ii
             double radiation_damping_term = 0.0;
-            if (friction_options.use_radiation_damping && (yield_mechanism != tresca))
+            if (friction_options.use_radiation_damping)
               {
                 AssertThrow(use_elasticity, ExcMessage("Usage of radiation damping only makes sense when elasticity is enabled."));
 
@@ -263,15 +263,18 @@ namespace aspect
                 //std::cout << " current edot_ii is " << current_edot_ii << std::endl;
                 radiation_damping_term = current_edot_ii * cellsize * elastic_shear_moduli[j]
                                          / (2.0 * std::sqrt(elastic_shear_moduli[j] / reference_density));
-                current_stress -= radiation_damping_term;
-                if (friction_options.cut_edot_ii)
-                  current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
+                if (yield_mechanism != tresca)
+                  {
+                    current_stress -= radiation_damping_term;
+                    if (friction_options.cut_edot_ii)
+                      current_edot_ii = std::max(current_stress / (2 * viscosity_pre_yield), min_strain_rate);
 
-                // Note: I applied radiation damping to current_stress because current_stress can be used
-                // to modify te effective viscosity and current_edot_ii, which in turn modifies the friction
-                // angle. Contrary, the yield_stress is only used to be compared to current_stress to
-                // determine if we enter yielding, which we always do anyway for rate-and-state friction.
-                // But maybe this is in fact not the best place to apply it.
+                    // Note: I applied radiation damping to current_stress because current_stress can be used
+                    // to modify te effective viscosity and current_edot_ii, which in turn modifies the friction
+                    // angle. Contrary, the yield_stress is only used to be compared to current_stress to
+                    // determine if we enter yielding, which we always do anyway for rate-and-state friction.
+                    // But maybe this is in fact not the best place to apply it.
+                  }
               }
             output_parameters.current_edot_ii[j] = current_edot_ii;
 
