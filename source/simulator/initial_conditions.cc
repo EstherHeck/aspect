@@ -270,11 +270,21 @@ namespace aspect
           ComponentMask property_mask  (particle_property_manager->get_data_info().n_components(),false);
           property_mask.set(particle_property,true);
 
-          const std::vector<std::vector<double> > particle_properties =
-            particle_interpolator->properties_at_points(particle_postprocessor.get_particle_world().get_particle_handler(),
-                                                        quadrature_points,
-                                                        property_mask,
-                                                        cell);
+          std::vector<std::vector<double> > particle_properties;
+
+          try
+            {
+              particle_properties =
+                particle_interpolator->properties_at_points(particle_postprocessor.get_particle_world().get_particle_handler(),
+                                                            quadrature_points,
+                                                            property_mask,
+                                                            cell);
+            }
+          catch (const std::exception &e)
+            {
+              std::cerr << e.what() << '\n';
+              throw e;
+            }
 
           // go through the composition dofs and set their global values
           // to the particle field interpolated at these points

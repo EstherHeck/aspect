@@ -395,10 +395,21 @@ namespace aspect
                   else
                     found_cell = cell;
 
-                  const std::vector<std::vector<double> > interpolated_properties = interpolator.properties_at_points(particle_handler,
-                                                                                    std::vector<Point<dim> > (1,particle_location),
-                                                                                    ComponentMask(property_information.n_components(),true),
-                                                                                    found_cell);
+                  std::vector<std::vector<double> > interpolated_properties;
+
+                  try
+                    {
+                      interpolated_properties = interpolator.properties_at_points(particle_handler,
+                                                                                  std::vector<Point<dim> > (1,particle_location),
+                                                                                  ComponentMask(property_information.n_components(),true),
+                                                                                  found_cell);
+                    }
+                  catch (const std::exception &e)
+                    {
+                      std::cerr << e.what() << '\n';
+                      throw e;
+                    }
+
                   for (unsigned int property_component = 0; property_component < property_information.get_components_by_plugin_index(property_index); ++property_component)
                     particle_properties.push_back(interpolated_properties[0][property_information.get_position_by_plugin_index(property_index)+property_component]);
                   break;
