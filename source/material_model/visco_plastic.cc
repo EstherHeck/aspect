@@ -467,6 +467,21 @@ namespace aspect
 
     template <int dim>
     void
+    ViscoPlastic<dim>::create_additional_named_outputs (MaterialModel::MaterialModelOutputs<dim> &out) const
+    {
+      rheology->create_plastic_outputs(out);
+
+      if (rheology->use_elasticity)
+        rheology->elastic_rheology.create_elastic_outputs(out);
+
+      if (rheology->friction_options.use_theta())
+        rheology->friction_options.create_friction_outputs(out);
+    }
+
+
+
+    template <int dim>
+    void
     ViscoPlastic<dim>::declare_parameters (ParameterHandler &prm)
     {
       prm.enter_subsection("Material model");
@@ -560,22 +575,6 @@ namespace aspect
       this->model_dependence.specific_heat = NonlinearDependence::none;
       this->model_dependence.thermal_conductivity = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::compositional_fields;
     }
-
-
-
-    template <int dim>
-    void
-    ViscoPlastic<dim>::create_additional_named_outputs (MaterialModel::MaterialModelOutputs<dim> &out) const
-    {
-      rheology->create_plastic_outputs(out);
-
-      if (rheology->use_elasticity)
-        rheology->elastic_rheology.create_elastic_outputs(out);
-
-      if (rheology->friction_options.use_theta())
-        rheology->friction_options.create_friction_outputs(out);
-    }
-
   }
 }
 
