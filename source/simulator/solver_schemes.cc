@@ -194,7 +194,7 @@ namespace aspect
   {
     // Advect the particles before they are potentially used to
     // set up the compositional fields.
-    if (particle_world.get() != nullptr)
+    if (particle_world.get() != nullptr && nonlinear_iteration <5)
       {
         // Do not advect the particles in the initial refinement stage
         const bool in_initial_refinement = (timestep_number == 0)
