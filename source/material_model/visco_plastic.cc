@@ -419,7 +419,7 @@ namespace aspect
       // A negative delta_theta_max would lead to a negative time step size and also does not make sense.
       // According to Herrendoerfer 2018 delta_theta_max is not allowed > 0.2, so this velue is used if the rest
       // gives non-sense.
-      if ((delta_theta_max_tot <= 0) || std::isinf(delta_theta_max_tot) || numbers::is_nan(delta_theta_max_tot))
+      //if ((delta_theta_max_tot <= 0) || std::isinf(delta_theta_max_tot) || numbers::is_nan(delta_theta_max_tot))
         delta_theta_max_tot = 0.2;
 
       return std::pair<double,double>(delta_theta_max_tot,
