@@ -382,7 +382,7 @@ namespace aspect
       AssertThrow(rheology->friction_options.use_theta() == true,
                   ExcMessage("The Lapusta-timestepping scheeme only works "
                              "when a state variable 'theta' is used in the friction formulation."));
-      const double nu = 0.5;
+      const double nu = 0.25;
       // poisson ratio (0.25 in herrendoerfer 2018), but we are incompressible, so it must be 0.5.
       // TODO: get the actual Poissons ration if at some point compressibility is possible
       const std::vector<double> elastic_shear_moduli = rheology->elastic_rheology.get_elastic_shear_moduli();
