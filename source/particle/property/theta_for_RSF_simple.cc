@@ -133,7 +133,7 @@ namespace aspect
             // The tricky part would however be to get all the necessary parameters to compute edot_ii -> call material model with material model inputs to have all information -> make a new function to test it with input: material_inputs
             // TOdo: How dooes it work with the reaction terms and particles? Are the reaction terms computed for the element or for each particle? 
             // Might make quite a difference here!
-            particle->get_properties()[data_position] += -105;//material_outputs.reaction_terms[0][this->introspection().compositional_index_for_name("theta")];
+            particle->get_properties()[data_position] += 1;//material_outputs.reaction_terms[0][this->introspection().compositional_index_for_name("theta")];
 
 /*           // ToDo: find the problem with theta becoming negative/Zero and remove the next three lines and {}
             const MaterialModel::ViscoPlastic<dim> &viscoplastic
