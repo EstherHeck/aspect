@@ -157,8 +157,22 @@ namespace aspect
             // if theta got negative for whatever reason, set a positive value instead
             // ToDo: find out why this happens at all. Or more precisely: Why that explicitly positive value
             // can become negative once I read it in again in the next time step
-            //if (particle->get_properties()[data_position] < 1e-50)
-            //  particle->get_properties()[data_position] = 1e-50;
+            if (particle->get_properties()[data_position] < 1e-50)
+            {
+              particle->get_properties()[data_position] = 1e-50;
+              if (particle->get_properties()[data_position] < 0)
+                  {
+                    //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
+                    std::cout << "got a negative reset   theta ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                  }
+                else if (particle->get_properties()[data_position] == 0)
+                  {
+                    //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
+                    std::cout << "got Zero reset   theta ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                  }
+                 else
+                   std::cout << "got a positive reset   theta on the particle ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
+           }
           }
         else
           return;
