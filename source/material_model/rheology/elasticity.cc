@@ -178,7 +178,7 @@ namespace aspect
         // scheme does a single Advection iteration and at minimum one Stokes iteration. More
         // than one nonlinear Advection iteration will produce an unrealistic build-up of
         // viscoelastic stress, which are tracked through compositional fields.
-        AssertThrow((this->get_parameters().nonlinear_solver ==
+       /* AssertThrow((this->get_parameters().nonlinear_solver ==
                      Parameters<dim>::NonlinearSolver::single_Advection_single_Stokes
                      ||
                      this->get_parameters().nonlinear_solver ==
@@ -193,7 +193,7 @@ namespace aspect
                                "solver schemes 'single Advection, single Stokes', "
                                "'single Advection, iterated Stokes', "
                                "'single Advection, iterated Newton Stokes', and "
-                               "'single Advection, iterated defect correction Stokes' "));
+                               "'single Advection, iterated defect correction Stokes' "));*/
 
         // Functionality to average the additional RHS terms over the cell is not implemented.
         // Consequently, it is only possible to use elasticity with the Material averaging schemes
