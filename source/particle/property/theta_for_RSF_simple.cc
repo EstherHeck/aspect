@@ -110,21 +110,21 @@ namespace aspect
               grad_u[d] = gradients[d];
             material_inputs.strain_rate[0] = symmetrize (grad_u);
 
- const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
+ std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
                     
 
                 if (particle->get_properties()[data_position] < 0)
                   {
                     //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
-                    std::cout << "got a negative old theta     ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                    std::cout << "got a negative old theta     ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
                   }
                 else if (particle->get_properties()[data_position] == 0)
                   {
                     //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
-                    std::cout << "got Zero old theta     ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                    std::cout << "got Zero old theta     ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
                   }
                  else
-                   std::cout << "got a positive old theta on the particle     ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
+                   std::cout << "got a positive old theta on the particle     ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
 
 
             this->get_material_model().evaluate (material_inputs,material_outputs);
@@ -140,18 +140,19 @@ namespace aspect
               = Plugins::get_plugin_as_type<const MaterialModel::ViscoPlastic<dim>>(this->get_material_model());
             if (viscoplastic.use_print_thetas ())
               {*/
+ coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
                 if (particle->get_properties()[data_position] < 0)
                   {
                     //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
-                    std::cout << "got a negative current theta ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                    std::cout << "got a negative current theta ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
                   }
                 else if (particle->get_properties()[data_position] == 0)
                   {
                     //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
-                    std::cout << "got Zero current theta ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                    std::cout << "got Zero current theta ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
                   }
                  else
-                   std::cout << "got a positive current theta on the particle ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
+                   std::cout << "got a positive current theta on the particle ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
              // }
 
             // if theta got negative for whatever reason, set a positive value instead
@@ -163,15 +164,15 @@ namespace aspect
               if (particle->get_properties()[data_position] < 0)
                   {
                     //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
-                    std::cout << "got a negative reset   theta ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                    std::cout << "got a negative reset   theta ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
                   }
                 else if (particle->get_properties()[data_position] == 0)
                   {
                     //const std::array<double,dim> coords = this->get_geometry_model().cartesian_to_natural_coordinates(material_inputs.position[0]);
-                    std::cout << "got Zero reset   theta ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
+                    std::cout << "got Zero reset   theta ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] << std::endl;
                   }
                  else
-                   std::cout << "got a positive reset   theta on the particle ( "<<particle->get_properties()[data_position]<< " ) on the particle at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
+                   std::cout << "got a positive reset   theta on the particle ( "<<particle->get_properties()[data_position]<< " ) on the particle "<<particle->get_id() << " at dt "<< this->get_timestep_number() <<" in position (x-y-z): "<< coords[0]<< " -- "<< coords[1]<< " -- "<< coords[2] <<  std::endl;
            }
           }
         else
