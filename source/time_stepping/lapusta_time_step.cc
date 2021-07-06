@@ -101,20 +101,20 @@ namespace aspect
                                                                 / local_velocity);
 
                       // state healing time step is: Deltat_h = 0.2 * theta.
-                      min_healing_time_step = std::min (min_healing_time_step,
-                                                        viscoplastic.compute_min_healing_time_step(in.composition[q]));
+                      //min_healing_time_step = std::min (min_healing_time_step,
+                      //                                  viscoplastic.compute_min_healing_time_step(in.composition[q]));
 
                       // the maximum local velocity needed for the displacement time step
-                      max_local_velocity = std::max (max_local_velocity,
-                                                     local_velocity);
+                      //max_local_velocity = std::max (max_local_velocity,
+                      //                               local_velocity);
 
                       // the viscoelastoplastic relaxation time step using the relaxation time scale:
                       // f_max * viscoplastic viscosity / shear modulus
                       // with f_max = 0.2 in Herrendörfer et al. 2018
                       // to capture the increasing slip rate in case of a purely rate-dependent friction, i.e. if b = 0
-                      min_vep_relaxation_time_step = std::min (min_vep_relaxation_time_step,
-                                                               0.2 * out.viscosities[q]
-                                                               / viscoplastic.get_elastic_shear_modulus(in.composition[q]));
+                      //min_vep_relaxation_time_step = std::min (min_vep_relaxation_time_step,
+                      //                                         0.2 * out.viscosities[q]
+                      //                                         / viscoplastic.get_elastic_shear_modulus(in.composition[q]));
                     }
                 }
 
@@ -123,8 +123,8 @@ namespace aspect
               // here, the term  min(|Delta x/v_x|,|Delta x/v_y|) is simplified to min(|Delta x / max_local_velocity|)
               // ToDo: check how different the min displacement timestep is from the convection timestep. Do
               // we need them both? Should it also be constraint to within the fault or used everywhere?
-              min_displacement_time_step = std::min (min_displacement_time_step,
-                                                     1.e-3 * delta_x / max_local_velocity);
+              //min_displacement_time_step = std::min (min_displacement_time_step,
+              //                                       1.e-3 * delta_x / max_local_velocity);
             }
         }
 
