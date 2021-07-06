@@ -96,7 +96,7 @@ namespace aspect
                                                                                               in.pressure[q]);
 
                       min_state_weakening_time_step = std::min (min_state_weakening_time_step,
-                                                                delta_theta_max_and_critical_slip_distance.first
+                                                                0.2
                                                                 * delta_theta_max_and_critical_slip_distance.second
                                                                 / local_velocity);
 
